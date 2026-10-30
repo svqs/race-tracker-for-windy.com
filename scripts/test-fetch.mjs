@@ -34,7 +34,7 @@ function serve(answers) {
     };
     return asked;
 }
-const URL_ = 'https://raw.githubusercontent.com/svqs/racetrack-Windy.com-plugin/main/data/race.json';
+const URL_ = 'https://raw.githubusercontent.com/svqs/Race-Tracker-for-Windy.com/main/data/race.json';
 const results = [];
 async function scenario(name, fn) {
     store.clear();

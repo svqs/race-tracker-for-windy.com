@@ -1,6 +1,6 @@
 {
     "name": "windy-plugin-racetrack",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "racetrack: follow one sailor live on the Windy map during a race",
     "main": "dist/plugin.min.js",
     "type": "module",
@@ -24,7 +24,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/svqs/racetrack-Windy.com-plugin"
+        "url": "https://github.com/svqs/Race-Tracker-for-Windy.com"
     },
     "author": "Sophia Stoltz",
     "license": "ISC",

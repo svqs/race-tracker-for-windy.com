@@ -8,7 +8,7 @@
 import { readRace, readTrack, trackUrl } from './data';
 import type { RaceInfo, RaceTrack } from './types';
 
-export const DATA_URL = 'https://raw.githubusercontent.com/svqs/racetrack-Windy.com-plugin/main/data/race.json';
+export const DATA_URL = 'https://raw.githubusercontent.com/svqs/Race-Tracker-for-Windy.com/main/data/race.json';
 /**
  * While you work on the plugin (npm start, loaded in Windy's developer mode), it reads a made-up race from this
  * computer instead (data/sample/, written fresh by scripts/make-sample.mjs on every npm start), so there is a boat

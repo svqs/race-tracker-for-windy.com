@@ -9,7 +9,7 @@ data/track.json   the positions                               (written by the Gi
 ```
 
 The plugin reads them from
-`https://raw.githubusercontent.com/svqs/racetrack-Windy.com-plugin/main/data/race.json` (`DATA_URL` in
+`https://raw.githubusercontent.com/svqs/Race-Tracker-for-Windy.com/main/data/race.json` (`DATA_URL` in
 `src/lib/source.ts`), every 5 minutes while it's open. GitHub caches these files for up to 5 minutes, and the Action
 runs every 15 minutes (GitHub often starts scheduled runs late), so a position usually shows up 15–30 minutes after
 the boat sent it.

@@ -19,7 +19,7 @@ Windy's own point forecast at its position (below the map, on the Wind tab) and 
 YB tracker on the boat ──satellite──▶ YB's servers (app.yb.tl)
                                           │  every 15 min: .github/workflows/update-track.yml
                                           ▼  runs scripts/fetch-track.mjs, then scripts/check-data.mjs
-                         GitHub repository svqs/racetrack-Windy.com-plugin
+                         GitHub repository svqs/Race-Tracker-for-Windy.com
                          data/race.json  (by hand: who, which race, start, finish, links, photos)
                          data/track.json (the Action adds positions, never removes any)
                                           │  every 5 min while racetrack is open (raw.githubusercontent.com)

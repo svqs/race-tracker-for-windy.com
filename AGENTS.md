@@ -19,8 +19,8 @@ lists every test scenario and the checks to do by hand in real Windy.
 - **Boat photos** (race.json, all optional): `athlete.background` (`data/boat-bg.jpg`, upright) behind the whole panel,
   fading to grey; the cards are dark glass (Windy's darkest greys, see-through and blurred, no colour added; a darker tint was too dark); text right on the photo is white and the grey labels near-white (owner's picks, 29 Oct). Two more ideas are built but switched
   off: `athlete.cover` fills the top card (logo row and numbers on glass), `athlete.boatPhoto` sits behind "The boat".
-- **Name and logo:** "Race Tracker" (owner, 29 Oct; it was "Racetrack"), in Bariol Regular, no sparkle. The code and the
-  repository keep the id `racetrack` (`windy-plugin-racetrack`, `/racetrack`). The font file isn't in the plugin
+- **Name and logo:** "Race Tracker" (owner, 29 Oct; it was "Racetrack"), in Bariol Regular, no sparkle. The code keeps the id
+  `racetrack` (`windy-plugin-racetrack`, `/racetrack`); the repository is `svqs/Race-Tracker-for-Windy.com`. The font file isn't in the plugin
   yet: `node scripts/embed-logo-font.mjs <bariol regular .woff2>` adds it; until then it shows where Bariol is installed.
 - **Panel:** who and which race, three numbers (speed, to finish, time at sea), all in the top bar: full width, flush to the panel's top and corners,
   staying put while the panel scrolls (desktop); then ONE row of three buttons that

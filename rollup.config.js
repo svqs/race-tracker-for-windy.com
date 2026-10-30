@@ -53,12 +53,13 @@ export default {
         clearScreen: false,
     },
     plugins: [
-        // npm start (served to Windy's developer mode): read the sample race from this computer (src/lib/source.ts)
+        // npm start (served to Windy's developer mode): read the sample race from this computer (src/lib/source.ts);
+        // npm run start:real (REAL_DATA=1): served the same way, but reading the real race from GitHub
         {
             name: 'racetrack-dev-flag',
             transform(code, id) {
                 if (!id.endsWith('/src/lib/source.ts')) {return null;}
-                return { code: code.replace("'__RACETRACK_DEV__'", process.env.SERVE !== 'false' ? "'true'" : "'false'"), map: null };
+                return { code: code.replace("'__RACETRACK_DEV__'", process.env.SERVE !== 'false' && process.env.REAL_DATA !== '1' ? "'true'" : "'false'"), map: null };
             },
         },
         rollupSvelte({

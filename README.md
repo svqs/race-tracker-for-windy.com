@@ -15,7 +15,8 @@ npm start        # serves https://localhost:9999/plugin.js with a made-up race, 
 ```
 
 Open https://localhost:9999/plugin.js once and accept the certificate warning, then load that address in
-https://www.windy.com/developer-mode. Reload Windy after each change.
+https://www.windy.com/developer-mode. Reload Windy after each change. `npm run start:real` does the same with the real
+race from GitHub instead of the made-up one.
 
 Without Windy: `npm run sandbox`, then http://localhost:8765/harness/index.html (a fake Windy map with the real plugin;
 pick a scenario at the top).

@@ -1,0 +1,33 @@
+name: publish-plugin
+# Uploads a new version to windy-plugins.com. Run it by hand (Actions → publish-plugin → Run workflow).
+on:
+    workflow_dispatch:
+jobs:
+    publish-plugin:
+        runs-on: ubuntu-latest
+        env:
+            WINDY_API_KEY: '${{ secrets.WINDY_API_KEY }}'
+        steps:
+            - uses: actions/checkout@v4
+            - name: Build
+              run: |
+                  npm ci
+                  npm run build
+            - name: Publish Plugin
+              run: |
+                  if [ -z "$WINDY_API_KEY" ]; then
+                    echo "Secret WINDY_API_KEY is not configured" >&2
+                    exit 1
+                  fi
+                  node scripts/package-plugin.mjs
+                  set +e
+                  curl -s --fail-with-body -o /tmp/response.txt -w '%{http_code}' -XPOST 'https://node.windy.com/plugins/v1.0/upload' -H "x-windy-api-key: ${WINDY_API_KEY}" -F "plugin_archive=@plugin.tar" > /tmp/status.txt
+                  ok=$?
+                  set -e
+                  echo "HTTP status: $(cat /tmp/status.txt)"
+                  cat /tmp/response.txt; echo ""
+                  url=$(sed 's#\\/#/#g' /tmp/response.txt | grep -oE 'https://windy-plugins\.com/[^" ]+plugin\.min\.js' | head -1 || true)
+                  if [ -n "$url" ]; then
+                    { echo "## racetrack is published"; echo ""; echo "Install URL (windy.com/plugins > Load plugin directly from URL):"; echo ""; echo "\`$url\`"; } >> "$GITHUB_STEP_SUMMARY"
+                  fi
+                  exit $ok

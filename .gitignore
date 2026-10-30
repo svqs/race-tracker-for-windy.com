@@ -1,0 +1,14 @@
+.tmp
+tmp
+.DS_Store
+.vscode
+.rollup.cache
+.secret-api-key.sh
+nohup.out
+node_modules
+__pycache__/
+*.log
+dist/*
+plugin.tar
+harness/sandbox.html
+data/sample/

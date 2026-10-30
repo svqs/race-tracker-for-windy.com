@@ -1,0 +1,61 @@
+{
+    "name": "windy-plugin-racetrack",
+    "version": "1.0.0",
+    "description": "racetrack: follow one sailor live on the Windy map during a race",
+    "main": "dist/plugin.min.js",
+    "type": "module",
+    "scripts": {
+        "build": "rm -rf dist && mkdir dist && SERVE=false rollup -c && cp package.json dist/",
+        "start": "node scripts/make-sample.mjs && rollup -w -c",
+        "sandbox": "npm run build && python3 harness/assemble.py && python3 -m http.server 8765",
+        "lint": "eslint --ext .ts,.svelte src",
+        "check:types": "svelte-check --workspace . --threshold warning",
+        "check:version": "node scripts/check-version.mjs",
+        "test:core": "node scripts/test-core.mjs",
+        "test:data": "node scripts/check-data.mjs data",
+        "test:fetch": "node scripts/test-fetch.mjs",
+        "test:feed": "node scripts/test-feed.mjs",
+        "check": "npm run lint && npm run check:version && npm run check:types && npm run test:core && npm run test:fetch && npm run test:feed && npm run test:data && npm run build",
+        "test:screens": "python3 harness/screens.py /tmp/racetrack-screens",
+        "test:scenarios": "python3 harness/test-scenarios.py /tmp/racetrack-scenarios",
+        "package:windy": "node scripts/package-plugin.mjs",
+        "publish:windy": "./scripts/publish.sh",
+        "sample": "node scripts/make-sample.mjs"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/svqs/racetrack-Windy.com-plugin"
+    },
+    "author": "Sophia Stoltz",
+    "license": "ISC",
+    "dependencies": {
+        "@windycom/plugin-devtools": "^3.0.3"
+    },
+    "devDependencies": {
+        "@rollup/plugin-node-resolve": "15.3.1",
+        "@rollup/plugin-commonjs": "25.0.8",
+        "@rollup/plugin-terser": "0.4.4",
+        "rollup": "4.63.5",
+        "rollup-plugin-serve": "1.1.1",
+        "rollup-plugin-svelte": "7.2.3",
+        "rollup-plugin-swc3": "0.11.2",
+        "less": "4.9.1",
+        "svelte-preprocess-less": "0.4.0",
+        "svelte-preprocess": "5.1.4",
+        "svelte": "4.2.20",
+        "typescript": "5.9.3",
+        "eslint": "8.57.1",
+        "@typescript-eslint/eslint-plugin": "6.21.0",
+        "@typescript-eslint/parser": "6.21.0",
+        "eslint-plugin-import": "2.32.0",
+        "eslint-import-resolver-typescript": "3.10.1",
+        "svelte-eslint-parser": "0.43.0",
+        "svelte-check": "3.8.6",
+        "@types/node": "^20.0.0",
+        "postcss": "8.5.28",
+        "postcss-selector-parser": "6.1.4"
+    },
+    "engines": {
+        "node": ">=20"
+    }
+}

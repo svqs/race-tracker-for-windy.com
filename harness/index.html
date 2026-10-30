@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>racetrack sandbox</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Windy's own font comes from windy.com; this stand-in is the closest free one -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;600;700&display=swap">
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #2e2e2e; font-family: 'Noto Sans', system-ui, sans-serif; color: #f8f8f8; }
+  .wpf { position: absolute; left: 16px; right: 16px; bottom: 16px; z-index: 40; padding: 16px 18px; border-radius: 14px; background: rgba(28,28,28,.94); color: #f8f8f8; font-size: 13px; line-height: 1.45; box-shadow: 0 10px 30px rgba(0,0,0,.5); }
+  .wpf { padding: 0 !important; overflow: hidden; background: #fff !important; color: #333 !important; font-size: 12px !important; }
+  .wpf .closing-x { position: absolute; right: 8px; top: 6px; cursor: pointer; color: #888; font-size: 15px; z-index: 30; }
+  .wpf .progress-bar { height: 8px; background: linear-gradient(90deg, #d49500 20%, #ddd 20%); }
+  .wpf .main-table { display: flex; }
+  /* like Windy's own box, parts of it carry their own z-index (this is what once drew over racetrack's pinned top card) */
+  .wpf .legend, .wpf .main-table__data-table { position: relative; z-index: 20; }
+  .wpf .legend { flex: none; width: 74px; background: #f2f2f2; color: #666; text-align: right; } .wpf .legend div { height: 24px; line-height: 24px; padding-right: 8px; }
+  .wpf .legend .lg-d { color: #b07a00; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+  .wpf .main-table__data-table { overflow-x: scroll; scrollbar-width: none; }
+  .wpf table { border-collapse: collapse; } .wpf td { height: 24px; padding: 0 6px; text-align: center; min-width: 22px; border-left: 1px solid #eee; white-space: nowrap; }
+  .wpf .tr--days td { text-align: left; color: #333; font-weight: 600; overflow: hidden; } .wpf .sticky-label { display: inline-block; white-space: nowrap; background: #fff; }
+  .wpf .predictability-label { color: #999; font-weight: 400; }
+  .wpf .detail-box-desktop { background: #7a1d22; color: #fff; overflow: hidden; }
+  .wpf .detail-box-desktop__first-row { display: flex; gap: 18px; padding: 9px 12px; white-space: nowrap; overflow: hidden; } .wpf .switch { display: flex; gap: 14px; } .wpf .switch__item { cursor: pointer; padding: 0 8px; } .wpf .switch__item.selected { background: rgba(255,255,255,.25); border-radius: 8px; }
+  /* which Windy layer is on (a stand-in for Windy's layer picker) */
+  #mock-layer { position: absolute; right: 56px; top: 12px; z-index: 30; padding: 5px 10px; border-radius: 12px; background: rgba(28,28,28,.85); color: #fff; font: 600 12px/1.2 system-ui, sans-serif; pointer-events: none; }
+  .wrap { display: flex; height: 100vh; min-height: 640px; }
+  #map { position: relative; flex: 1; overflow: hidden; background: #3fa0a8; }
+  .world { position: absolute; left: 0; top: 0; width: 100%; height: 100%; transform-origin: 0 0; pointer-events: none;
+    background: radial-gradient(ellipse 30% 22% at 70% 20%, #8fc446 0%, rgba(143,196,70,0) 100%), radial-gradient(ellipse 45% 25% at 45% 70%, #4dbb5f 0%, rgba(77,187,95,0) 100%), radial-gradient(ellipse 35% 30% at 20% 30%, #5b6ec2 0%, rgba(91,110,194,0) 100%), linear-gradient(165deg, #3fa0a8 0%, #4dbb5f 50%, #3fa0a8 100%); }
+  /* what Windy adds to every outside plugin's desktop panel (ExternalSveltePlugin.getCss) */
+  @media (min-width: 761px) { #pane .plugin__content { padding: 25px 25px 100px 25px; } }
+  #pane { width: 400px; flex-shrink: 0; overflow: hidden; height: 100%; background: #2e2e2e; box-shadow: -2px 0 14px rgba(0,0,0,.35); }
+  .land { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .land path { fill: rgba(30,30,30,.16); stroke: rgba(20,20,20,.55); stroke-width: 1; stroke-linejoin: round; }
+  .label { position: absolute; transform: translate(-50%, -50%); font: 600 12px system-ui; text-shadow: 0 1px 3px rgba(0,0,0,.7); white-space: nowrap; pointer-events: none; opacity: .85; }
+  .label::before { content: ''; display: inline-block; width: 5px; height: 5px; border-radius: 3px; background: #f8f8f8; margin-right: 5px; vertical-align: middle; }
+  .mock-marker { position: absolute; width: 0; height: 0; }
+  .plugin__mobile-header { display: none; }
+  .banner { position: absolute; left: 14px; top: 12px; right: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; z-index: 25; }
+  .pill { padding: 7px 12px; border-radius: 16px; background: #f8f8f8; color: #3c3c3c; font-size: 13px; text-decoration: none; }
+  .pill b { color: #1c1c1c; }
+  .pill.on { background: #d49500; color: #1c1c1c; font-weight: 700; }
+  .note { background: rgba(28,28,28,.8); color: #f8f8f8; }
+  .w-closing-x { position: fixed; top: 12px; right: 412px; z-index: 40; width: 30px; height: 30px; border-radius: 15px; border: 0; background: rgba(0,0,0,.45); color: #f8f8f8; font: 600 14px system-ui, sans-serif; cursor: pointer; }
+  @media (max-width: 760px) { .w-closing-x { display: none; } .banner .note { display: none; } }
+  /* phones: map on top, Windy's small pane under it, as tall as the plugin makes it */
+  @media (max-width: 760px) { .wrap { flex-direction: column; height: 100dvh; min-height: 0; } #map { flex: 1; min-height: 0; } #pane { width: 100%; height: auto; flex: none; box-shadow: 0 -2px 14px rgba(0,0,0,.35); overflow: visible; position: relative; z-index: 5; } }
+  .mock-line { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+  .mock-flash { position: absolute; width: 0; height: 0; pointer-events: none; }
+  .mock-flash::after { content: ''; position: absolute; left: -30px; top: -30px; width: 60px; height: 60px; border-radius: 50%; border: 2px solid #f8f8f8; animation: flash 1.3s ease-out forwards; }
+  @keyframes flash { from { transform: scale(.3); opacity: 1; } to { transform: scale(1.6); opacity: 0; } }
+  .mock-popup { position: absolute; z-index: 20; transform: translate(-50%, calc(-100% - 16px)); filter: drop-shadow(0 6px 18px rgba(0,0,0,.4)); cursor: default; }
+  .mock-popup .leaflet-popup-content-wrapper { background: #f8f8f8; color: #1c1c1c; border-radius: 16px; }
+  .mock-popup .leaflet-popup-content { margin: 0; padding: 12px; }
+  .mock-popup::after { content: ''; position: absolute; left: 50%; bottom: -8px; margin-left: -8px; border: 8px solid transparent; border-bottom: 0; border-top-color: #f8f8f8; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="map"><div id="mock-layer"></div>
+    <div class="world" id="world"></div>
+    <svg class="land" id="land" aria-hidden="true"></svg>
+    <div class="banner" id="banner">
+      <span class="pill note"><b style="color:#fff">Sandbox</b> · fake Windy map and forecast, real racetrack plugin</span>
+    </div>
+  </div>
+  <div id="pane"></div>
+</div>
+<script src="./mock-windy.js"></script>
+<script type="module">
+  const { default: Plugin } = await import(new URLSearchParams(location.search).get('bundle') === 'min' ? '../dist/plugin.min.js' : '../dist/plugin.js');
+  const mapEl = document.getElementById('map');
+  const { project, PLACES } = W.__mock;
+
+  // place names on the map (like Windy's city labels), kept in step when the map moves
+  const drawLabels = () => {
+    mapEl.querySelectorAll('.label').forEach(n => n.remove());
+    PLACES.forEach(p => {
+      const el = document.createElement('div');
+      el.className = 'label';
+      el.textContent = p.name;
+      const pos = project(p.lat, p.lon);
+      el.style.left = pos.x + 'px'; el.style.top = (pos.y + 16) + 'px';
+      mapEl.appendChild(el);
+    });
+  };
+  // rough coasts, so the fake map reads as the Atlantic
+  const LAND = [
+    [[56,8],[53.5,5],[51,2.5],[50.9,1.6],[50,1.4],[49.7,-1.3],[48.7,-1.6],[48.65,-2.1],[48.8,-3.5],[48.4,-4.8],[47.8,-4.3],[47.2,-2.2],[46,-1.2],[44.5,-1.2],[43.4,-1.7],[43.4,-3.8],[43.6,-6.5],[43.7,-8],[42.9,-9.3],[41.8,-8.9],[40,-8.9],[38.7,-9.5],[37,-9],[37.1,-7.3],[36.2,-6],[35.8,-5.9],[34,-6.8],[32,-9.3],[30.4,-9.7],[28.5,-11],[26,-14.5],[24,-16],[21,-17],[19,-16.3],[14.7,-17.5],[12,-16.8],[10,-14.5],[6,-10],[6,10],[56,10]],
+    [[51.4,-3],[50.1,-5.7],[50.6,-4],[50.7,-2],[51,1.4],[52,1.7],[54,0],[56,-1.8],[56,-5.5],[54,-3.2],[53.3,-4.6],[51.7,-5.2]],
+    [[52,-10],[51.5,-9.6],[52.2,-6.4],[54,-6],[55.3,-7.3],[54.2,-10.1]],
+    [[10,-75],[11.5,-71],[11.2,-68.2],[10.6,-64],[10.7,-61.8],[10,-61],[8,-60],[6,-57],[6,-75]],
+    [[18.5,-67.2],[18.5,-65.6],[18,-65.6],[17.9,-67.2]], [[19.9,-75],[19.7,-71],[18.2,-68.4],[18.4,-70],[18,-72],[18.5,-75]],
+    [[16.5,-61.8],[16.0,-61.75],[15.95,-61.6],[16.2,-61.55],[16.3,-61.2],[16.5,-61.5]], [[15.6,-61.5],[15.2,-61.3],[15.3,-61.25],[15.6,-61.4]],
+    [[14.85,-61.2],[14.4,-61.05],[14.45,-60.85],[14.8,-60.95]], [[17.15,-61.9],[17,-61.9],[17.05,-61.7],[17.15,-61.7]],
+    [[32.85,-17.25],[32.65,-17.1],[32.7,-16.7],[32.8,-16.7]], [[28.55,-16.9],[28,-16.9],[28.1,-16.3],[28.5,-16.1]], [[28.2,-15.8],[27.75,-15.6],[27.95,-15.35],[28.15,-15.4]],
+    [[29.2,-13.9],[28.85,-13.85],[29.1,-13.4],[28.4,-14.2],[28.05,-14.5],[28.4,-13.85]],
+    [[37.9,-25.85],[37.7,-25.85],[37.75,-25.15],[37.9,-25.2]], [[38.75,-28.8],[38.5,-28.5],[38.4,-27.9],[38.6,-27.8]], [[39.1,-28.25],[38.95,-27.95],[39.05,-27.9]],
+    [[16.9,-25.2],[16.6,-25.1],[16.85,-24.9]], [[15.3,-23.8],[14.9,-23.5],[15.2,-23.4]],
+    [[32.4,-64.85],[32.25,-64.85],[32.3,-64.65]],
+  ];
+  const landEl = document.getElementById('land');
+  const drawLand = () => {
+    landEl.innerHTML = LAND.map(poly => '<path d="M' + poly.map(([la, lo]) => { const q = project(la, lo); return q.x.toFixed(1) + ' ' + q.y.toFixed(1); }).join('L') + 'Z"/>').join('');
+  };
+  drawLand();
+  drawLabels();
+  const worldEl = document.getElementById('world');
+  const syncWorld = () => { const { INIT, view } = W.__mock; const q = project(INIT.north, INIT.west); worldEl.style.transform = `translate(${q.x}px, ${q.y}px) scale(${1 / view.k})`; };
+  W.__mock.onMove(() => { syncWorld(); drawLand(); drawLabels(); });
+  window.addEventListener('resize', () => { drawLand(); drawLabels(); });
+
+  // Windy's own point forecast (a stand-in here): what tapping the boat or Forecast opens in real Windy
+  // Windy's own point forecast (a stand-in here). Like Windy: one box (W.plugins.detail.node), put under the map when
+  // it opens, taken off the page when it closes. The plugin moves this box into its Now tab on desktop.
+  const pfNode = document.createElement('div');
+  pfNode.id = 'plugin-detail'; pfNode.className = 'wpf';
+  W.plugins.detail = { get node() { return pfNode; }, get isOpen() { return pfNode.isConnected; } };
+  const pfFill = p => {
+    // laid out like Windy's: a thin timeline line, the legend, a table that scrolls sideways (days, hours, numbers), a red bar
+    const hours = Array.from({ length: 40 }, (_, i) => Date.now() + i * 3 * 3600e3);
+    const days = [];
+    hours.forEach(t => { const d = new Date(t).toDateString(); if (!days.length || days[days.length - 1].d !== d) days.push({ d, t, n: 0 }); days[days.length - 1].n++; });
+    const cells = f => hours.map((t, i) => '<td>' + f(t, i) + '</td>').join('');
+    pfNode.innerHTML = '<div class="closing-x" title="Close">✕</div><div class="progress-bar"></div>'
+      + '<section class="main-table"><div class="legend"><div class="lg-d">stand-in</div><div>Hours</div><div>Wind kt</div><div>Gusts</div><div>Waves m</div></div>'
+      + '<div class="main-table__data-table"><table><tr class="tr--days">' + days.map(d => '<td class="sticky-label-wrapper" colspan="' + d.n + '"><div class="sticky-label">' + new Date(d.t).toLocaleDateString('en', { weekday: 'long', day: 'numeric' }) + ' <span class="predictability-label">70%</span></div></td>').join('') + '</tr>'
+      + '<tr>' + cells(t => String(new Date(t).getHours()).padStart(2, '0')) + '</tr><tr>' + cells((t, i) => 14 + Math.round(6 * Math.sin(i / 4))) + '</tr>'
+      + '<tr>' + cells((t, i) => 19 + Math.round(7 * Math.sin(i / 4))) + '</tr><tr>' + cells((t, i) => (1.5 + Math.sin(i / 6)).toFixed(1)) + '</tr></table></div></section>'
+      + '<section class="detail-box-desktop"><div class="detail-box-desktop__first-row"><nav class="switch">' + PF_TABS.map(t => '<div class="switch__item' + (t === pfTab ? ' selected' : '') + '">' + t + '</div>').join('') + '</nav><span>Settings for location fcst.</span></div></section>';
+    pfNode.querySelector('.closing-x').addEventListener('click', e => { e.stopPropagation(); pfNode.remove(); W.broadcast.emit('pluginClosed', 'detail'); });
+    pfNode.querySelector('.lg-d').textContent = 'stand-in · ' + pfTab;
+    // like Windy: a tab stays picked (also the next time it opens, anywhere); "display" asked for when opening is ignored
+    pfNode.querySelectorAll('.switch__item').forEach(el => el.addEventListener('click', () => { pfTab = el.textContent; pfNode.querySelectorAll('.switch__item').forEach(x => x.classList.toggle('selected', x === el)); pfNode.querySelector('.lg-d').textContent = 'stand-in · ' + pfTab; }));
+  };
+  const PF_TABS = ['Basic', 'Wave&Tide', 'Meteog.', 'Wind', 'Pollen&AirQ', 'Airgram'];
+  let pfTab = 'Basic';
+  W.broadcast.on('rqstOpen', (what, p) => {
+    if (what !== 'detail' || !p) return;
+    pfFill(p);
+    if (!pfNode.isConnected) { document.getElementById('map').appendChild(pfNode); setTimeout(() => W.broadcast.emit('pluginOpened', 'detail'), 50); }
+  });
+  W.broadcast.on('rqstClose', what => {
+    if (what !== 'detail' || !pfNode.isConnected) return;
+    pfNode.remove(); W.broadcast.emit('pluginClosed', 'detail');
+  });
+
+  const layerEl = document.getElementById('mock-layer');
+  const showLayerName = v => { layerEl.textContent = 'Layer: ' + v; };
+  showLayerName(W.store.get('overlay')); W.store.on('overlay', showLayerName);
+
+  // scenario switch (hidden when the page is shown inside the review page: ?embed)
+  const banner = document.getElementById('banner');
+  if (new URLSearchParams(location.search).has('embed')) banner.style.display = 'none';
+  const now = new URLSearchParams(location.search).get('scenario') || 'racing';
+  for (const s of ['racing', 'quiet', 'before', 'finished', 'retired', 'empty', 'messy', 'live', 'slow', 'broken', 'offline', 'cached', 'nophoto', 'real']) {
+    const a = document.createElement('a');
+    a.className = 'pill' + (s === now ? ' on' : '');
+    a.textContent = s;
+    const q = new URLSearchParams(location.search); q.set('scenario', s);
+    a.href = '?' + q;
+    banner.appendChild(a);
+  }
+
+  // each scenario starts clean (the plugin keeps the last race it saw)
+  // (except 'cached', which shows what an earlier visit left behind)
+  try { if (now !== 'cached') localStorage.removeItem('racetrack-last'); localStorage.removeItem('racetrack-forecast'); } catch { /* no storage here */ }
+  window.racetrack = new Plugin({ target: document.getElementById('pane') });
+</script>
+</body>
+</html>

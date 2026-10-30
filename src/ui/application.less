@@ -1,0 +1,245 @@
+/* racetrack's panel: spotlog's look and phone behaviour, one to one (colours from src/lib/theme.ts → --rt-*) */
+    @ground: var(--rt-uGround, #2e2e2e);
+    @card: var(--rt-uCard, #3c3c3c);
+    @line: var(--rt-uLine, #4d4d4d);
+    @outline: var(--rt-uOutline, #5a5a5a);
+    @text: var(--rt-uText, #f8f8f8);
+    @sub: var(--rt-uSub, #b0b0b0);
+    @orange: var(--rt-accent, #d49500);
+
+    .racetrack {
+        background: @ground;
+        color: @text;
+        font-family: inherit;
+        font-size: var(--rt-textSize, 14px);
+        padding: 14px 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: var(--rt-panelGap, 16px);
+        /* the panel scrolls itself: Windy's pane doesn't scroll plugin content for us */
+        height: 100%;
+        max-height: 100vh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        box-sizing: border-box;
+        position: relative;
+
+        :global(button) { font: inherit; color: inherit; cursor: pointer; }
+        :global(button:focus-visible) { outline: 2px solid @orange; outline-offset: 1px; }
+        small { color: @sub; font-size: 12px; }
+        b { font-weight: 600; }
+    }
+    .racetrack > :global(*) { flex-shrink: 0; }
+    /* desktop: a thin scrollbar and no room kept for it, so the top bar can reach both corners of the panel */
+    .racetrack:not(.m) { scrollbar-width: thin; }
+    /* desktop (and the phone fallback): the wrappers don't exist for layout, the pages flow in the panel */
+    .mwrap, .body { display: contents; }
+    .body > :global(*) { flex-shrink: 0; }
+
+    /* ---------- phones: a compact bar in Windy's pane under the timeline (explicit height: Windy's pane needs one) ---------- */
+    .racetrack.m.bar { height: 104px; max-height: none; min-height: 104px; padding: 0; gap: 0; display: block; overflow: visible; position: relative; }
+    .mbar { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 9px; }
+    .mrow { display: flex; align-items: center; gap: 10px; min-height: 30px; .wordmark { font-size: 20px; } }
+    .macts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .mact { height: 40px; padding: 0 6px; border-radius: 999px; border: 1px solid var(--rt-actLine, #5a5a5a); background: var(--rt-actBg, #3c3c3c); color: var(--rt-actText, #f8f8f8) !important; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12.5px !important; font-weight: 600;
+        span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } &:disabled { opacity: 0.6; }
+        &.on { background: var(--rt-highlight, #d49500); border-color: var(--rt-highlight, #d49500); color: #fff !important; } }
+    /* very narrow phones (320 px): the words fit without the icons */
+    @media (max-width: 359px) { .mact { padding: 0 4px; :global(svg) { display: none; } } }
+    /* the panel rises from the bar over the timeline and the map; it scrolls inside */
+    .mwrap.on { display: flex; flex-direction: column; position: absolute; left: 8px; right: 8px; bottom: calc(100% + 8px); z-index: 30;
+        /* the top stays clear of Windy's own bar (it shows up when you touch the map) */
+        height: calc(100vh - 340px); height: calc(100dvh - 340px - env(safe-area-inset-top, 0px)); min-height: 260px;
+        touch-action: pan-y; overscroll-behavior: contain;
+        background: @ground; border-radius: 18px; box-shadow: 0 10px 34px rgba(0, 0, 0, 0.5); overflow: hidden;
+        transform-origin: 50% 100%; transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.3, 1), opacity 0.18s ease; }
+    .mwrap.on:not(.open) { opacity: 0; transform: translateY(14px) scale(0.98); pointer-events: none; visibility: hidden; transition: transform 0.18s ease, opacity 0.15s ease, visibility 0s 0.18s; }
+    /* it scrolls up and down only: nothing in it can push it sideways */
+    .mwrap.on .body { display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 0 12px 16px; touch-action: pan-y; }
+    /* the page header (title, units, ✕) stays put while the page scrolls under it */
+    .mwrap.on .topbar { position: sticky; top: 0; z-index: 8; margin: 0 -12px -4px; padding: 10px 8px 8px 12px; background: @ground; }
+    .mwrap.on .topbar .title { font-size: 16px; }
+    .mclose { flex-shrink: 0; width: 34px; height: 34px; margin-left: -4px; border: 0; border-radius: 17px; background: none; color: @sub !important; font-size: 16px; line-height: 1; padding: 0; }
+    @media (prefers-reduced-motion: reduce) { .mwrap.on, .mwrap.on:not(.open) { transition: none; } }
+    /* the phone fallback: the classic half-screen panel under the timeline */
+    .racetrack.m { padding: 8px 10px 16px; gap: 10px; height: 50vh; height: 50dvh; max-height: 50dvh; touch-action: pan-y;
+        .head { padding: 10px 14px; gap: 8px; }
+        .wordmark { font-size: 21px; }
+        .title { font-size: 16px; } }
+
+    /* ---------- shared ---------- */
+    /* the phase next to the wordmark: live (with a green dot), soon, finished */
+    .tag { display: inline-flex; align-items: center; gap: 5px; padding: 2px 6px 1px; border-radius: 7px; border: 1px solid @outline; color: @sub; font-family: inherit; font-weight: 600; font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.2; align-self: center;
+        &.live::before { content: ''; width: 6px; height: 6px; border-radius: 3px; background: var(--rt-liveBg, #50b450); } }
+    .wordmark { font-family: 'racetrack-logo', 'Bariol', inherit; font-weight: 400; font-size: var(--rt-wordmarkSize, 24px); letter-spacing: -0.01em; line-height: 1; }
+    .card { background: @card; border: 1px solid @line; border-radius: var(--rt-radiusCard, 18px); padding: 14px 16px; display: flex; flex-direction: column; gap: 12px; }
+    .row { display: flex; align-items: center; gap: 10px; }
+    .grow { flex: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .grow-b { flex: 1; min-width: 0; }
+    .title { font-size: var(--rt-titleSize, 17px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .h3 { font-size: 15px; }
+    .muted { color: @sub; font-size: 13px; }
+    .p { margin: 0; line-height: 1.45; }
+    .line { display: block; margin: -4px 2px 0; line-height: 1.45; }
+    .err { color: var(--rt-dangerText, #ff9a9a) !important; line-height: 1.4; }
+    .topbar { display: flex; align-items: center; gap: 10px; }
+    .brand { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
+    /* desktop: a plain chevron before the wordmark goes back to Windy's menu (like other plugins) */
+    .back-menu { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 30px; margin: 0 -2px 0 -6px; padding: 0; border: 0; background: none; color: @text; opacity: 0.85;
+        &:hover { opacity: 1; } }
+
+    /* the three actions: one row of rounded buttons, icon and word side by side, all the same grey (owner's pick) */
+    .actions { display: flex; gap: 6px; }
+    .act { flex: 1 1 auto; min-width: 0; height: 40px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--rt-actLine, #5a5a5a); background: var(--rt-actBg, #3c3c3c); color: var(--rt-actText, #f8f8f8) !important;
+        display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 5px;
+        :global(svg) { color: var(--rt-actIcon, #f8f8f8); width: 16px; height: 16px; }
+        b { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        &:hover { border-color: var(--rt-uHoverLine, #777777); background: var(--rt-uHoverBg, #424242); }
+        /* selected: Windy's orange for UI elements on dark content */
+        &.on { background: var(--rt-highlight, #d49500); border-color: var(--rt-highlight, #d49500); color: #fff !important; :global(svg) { color: #fff; } } }
+
+
+    .btn { height: 46px; padding: 0 16px; border-radius: var(--rt-radiusButton, 12px); font-weight: 600; display: inline-flex; align-items: center; justify-content: center; flex: 1; box-sizing: border-box; white-space: nowrap; text-decoration: none;
+        &.ghost { background: transparent; border: 1px solid var(--rt-ghostLine, #5a5a5a); color: var(--rt-ghostText, #f8f8f8) !important; }
+        &.wide { width: 100%; flex: none; } }
+    .link { background: none; border: 0; color: var(--rt-linkText, #d49500) !important; font-weight: 600; padding: 6px 0; align-self: flex-start; flex-shrink: 0;
+        &.more { align-self: center; padding: 12px 0 4px; } }
+    .empty { padding: 20px; border: 1px dashed @outline; border-radius: 14px; color: @sub; text-align: center; line-height: 1.45; }
+
+    /* now: where things stand */
+    .status { gap: 4px; }
+    /*
+     * The boat's photo behind the whole panel (race.json: athlete.background; owner's pick, 29 Oct: "a great vibe").
+     * It stays put while the panel scrolls and fades into the panel's grey towards the bottom. The cards are dark glass:
+     * Windy's darkest greys, see-through and blurred, no colour added (owner's pick, 29 Oct; a darker tint was too dark).
+     */
+    .racetrack.has-bg:not(.bar), .racetrack.has-bg .mwrap.on .body {
+        background: linear-gradient(180deg, rgba(30, 30, 30, 0.3) 0%, rgba(36, 36, 36, 0.66) 40%, rgba(46, 46, 46, 0.94) 85%), var(--rt-bgimg) center top / cover no-repeat, @ground; }
+    /* desktop: the top card (Racetrack, the athlete and the three numbers) stays at the top while the panel scrolls */
+    /* it sticks flush to the top (the panel's top padding becomes the card's margin), so nothing shows above it, and it
+     * is a little more solid than the other cards so what scrolls under it stays a blur */
+    /* …and it is part of the panel: a full-width bar from edge to edge and up into the corners, square, with a thin line
+     * underneath (owner, 29 Oct: "more native to the panel") */
+    /* Windy gives every outside plugin's panel 25 px of padding (100 px at the bottom) with an id rule
+     * (#plugin-windy-plugin-racetrack .plugin__content, from ExternalSveltePlugin.getCss), which beats any class rule, so
+     * racetrack sets its own with !important: none at the top, Windy's 25 px at the sides, and the top bar reaches out
+     * over the side padding to both edges. */
+    .racetrack:not(.m) { padding: 0 25px 40px !important; }
+    .racetrack:not(.m) .card.head { position: sticky; top: 0; z-index: 6; margin: 0 -25px; padding: 14px 25px 16px;
+        border-radius: 0; border-width: 0 0 1px; border-style: solid; border-color: rgba(255, 255, 255, 0.08); box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3); }
+    .racetrack.has-bg:not(.m) .card.head:not(.photo) { background: rgba(28, 28, 28, 0.84); }
+    /* on the photo, the grey second-line text (labels, units, the boat class…) turns near-white so it reads on the glass */
+    .racetrack.has-bg { --rt-uSub: #e8e8e8; --rt-condSub: #e2e2e2; --rt-uQuiet: #d6d6d6; }
+    .racetrack.has-bg {
+        .card:not(.photo) { background: rgba(28, 28, 28, 0.58); border-color: rgba(255, 255, 255, 0.07); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+        :global(.cond) { background: rgba(46, 46, 46, 0.6); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+        .act:not(.on), .mact:not(.on) { background: rgba(28, 28, 28, 0.62); border-color: rgba(255, 255, 255, 0.12); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .mwrap.on .topbar { background: rgba(28, 28, 28, 0.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+        /* text that sits right on the photo (not on a card) is white with a soft shadow, so it reads on any photo */
+        .status-line, .status-line span, .line:not(.err), .ver, .empty { color: #fff !important; text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7); }
+        .empty { border-color: rgba(255, 255, 255, 0.4); } }
+    /*
+     * The top card with the boat's photo (race.json: athlete.cover): the photo fills the card, the logo row on top and
+     * Milan's photo, name and numbers below sit on dark frosted glass, so the photo shows through a little.
+     */
+    .card.head.photo { padding: 0; gap: 0; overflow: hidden; background: var(--rt-img) center 40% / cover no-repeat, @card;
+        .head-top { padding: 10px 14px; background: rgba(28, 28, 28, 0.55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .head-gap { height: 118px; }
+        .head-who { display: flex; flex-direction: column; gap: 12px; padding: 12px 16px 14px; background: rgba(28, 28, 28, 0.62); backdrop-filter: blur(14px) saturate(1.1); -webkit-backdrop-filter: blur(14px) saturate(1.1); } }
+    .card.head:not(.photo) .head-who { display: flex; flex-direction: column; gap: 12px; }
+    .racetrack.m .card.head.photo .head-gap { height: 96px; }
+    /* "The boat" on a photo of the boat (race.json: athlete.boatPhoto), darkened so the numbers stay readable */
+    .card.boatcard.photo { background: linear-gradient(rgba(24, 24, 24, 0.62), rgba(24, 24, 24, 0.8)), var(--rt-img) center / cover no-repeat, @card; border-color: rgba(255, 255, 255, 0.08);
+        :global(.kv) > :global(span), :global(.kv) > :global(b) { border-top-color: rgba(255, 255, 255, 0.14); }
+        :global(.kv) > :global(span) { color: rgba(240, 240, 240, 0.72); } }
+    /* Things to look out for: Windy layers, one line each; a tap switches the map (the one on the map in Windy orange) */
+    .watch { gap: 4px; padding-bottom: 6px;
+        .wlist { display: flex; flex-direction: column; }
+        .witem { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 6px; margin: 0 -6px; box-sizing: content-box; border: 0;
+            border-top: 1px solid @line; border-radius: 0; background: transparent; text-align: left; color: @text !important; cursor: pointer;
+            &:first-child { border-top: 0; }
+            &:hover { background: rgba(255, 255, 255, 0.04); } }
+        .wtext { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1;
+            b { font-size: 14px; }
+            small { color: var(--rt-uSub, @sub); font-size: 12px; line-height: 1.4; } }
+        .wstate { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; border-radius: 999px; border: 1px solid var(--rt-chipLine, #5a5a5a);
+            font-size: 12px; font-weight: 600; color: var(--rt-chipText, #f8f8f8); white-space: nowrap; }
+        .witem.on .wstate { border-color: @orange; color: @orange; } }
+    /* Windy's point forecast, open below the map (or not) */
+    .pf { flex-direction: row; align-items: center; gap: 12px; padding: 12px 14px;
+        .grow { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+        b { font-size: 14px; }
+        small { color: @sub; font-size: 12px; line-height: 1.4; }
+        .pf-ic { width: 34px; height: 34px; border-radius: 17px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+            background: var(--rt-uGround, #2e2e2e); color: var(--rt-condIcon, #ffe3a1); }
+        .pf-btn { flex: none; height: 36px; padding: 0 16px; border: 0; background: var(--rt-primaryBg, #d49500); color: var(--rt-primaryText, #ffffff) !important; cursor: pointer; } }
+    .status-line { display: flex; align-items: center; gap: 8px; margin: -2px 2px -4px; font-size: 13px; color: @sub;
+        .live-dot { width: 8px; height: 8px; border-radius: 4px; background: var(--rt-liveBg, #50b450); flex-shrink: 0; box-shadow: 0 0 0 3px rgba(80, 180, 80, 0.2); }
+        &.quiet .live-dot { background: var(--rt-quietBg, #d49500); box-shadow: 0 0 0 3px rgba(212, 149, 0, 0.2); }
+        &.wait .live-dot { background: #9aa0a6; box-shadow: 0 0 0 3px rgba(154, 160, 166, 0.25); } }
+    .kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); column-gap: 0; row-gap: 0; font-size: 13.5px;
+        > span, > b { display: flex; align-items: center; gap: 6px; min-height: 36px; border-top: 1px solid @line; }
+        > span { color: @sub; padding-right: 16px; }
+        > b { justify-content: flex-end; text-align: right; font-weight: 600; flex-wrap: wrap; column-gap: 6px; small { font-weight: 400; } }
+        > b.pos { font-variant-numeric: tabular-nums; white-space: nowrap; } }
+    .course { display: inline-block; font-style: normal; font-weight: 700; line-height: 1; color: var(--rt-highlightLight, #ffe3a1); }
+
+    /* track: positions, newest first, by day */
+    .list-card { padding: 4px 14px 10px; gap: 0; }
+    .dayh { padding: 14px 0 6px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--rt-uQuiet, #8a8a8a); }
+    .item { display: grid; grid-template-columns: max-content minmax(0, 1fr) max-content max-content; align-items: center; column-gap: 10px; min-height: 46px; width: 100%; padding: 4px 6px; margin: 0 -6px; box-sizing: content-box; border: 0; border-top: 1px solid @line; border-radius: 0; background: transparent; text-align: left; color: @text !important;
+        .t { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 46px; }
+        .grow { flex-direction: row; align-items: baseline; gap: 6px; b { font-size: 13.5px; } }
+        .crs { display: flex; align-items: center; gap: 5px; small { font-size: 11px; font-weight: 600; } }
+        .fin { text-align: right; font-size: 13px; white-space: nowrap; }
+        &:hover { background: var(--rt-uHoverBg, #424242); }
+        &.on { background: var(--rt-selBg, #d49500); color: var(--rt-selText, #ffffff) !important; border-radius: 10px; small { color: rgba(255, 255, 255, 0.82); } } }
+    .dayh + .item { border-top: 0; }
+    .start-row { cursor: default; &:hover { background: transparent; } }
+    @media (max-width: 380px) { .item { column-gap: 7px; .fin { font-size: 12px; } .crs small { display: none; } } }
+
+    /* about */
+    /* about: him and the race, with their links */
+    .about { gap: 12px; }
+    .links { display: flex; flex-wrap: wrap; gap: 6px; }
+    .lnk { display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--rt-chipLine, #5a5a5a); color: var(--rt-chipText, #f8f8f8); text-decoration: none; font-size: 13px; font-weight: 600;
+        span { color: @sub; font-weight: 400; }
+        &:hover, &:focus-visible { border-color: var(--rt-highlight, #d49500); } }
+    :global(.rt-ava.big) { width: 56px; height: 56px; font-size: 18px; }
+    .sig { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 4px 0 4px; }
+    .ver { font-size: 11px; color: var(--rt-uQuiet, #7a7a7a); }
+    :global(.rt-brand) { font-family: 'racetrack-logo', 'Bariol', inherit; font-weight: 400; white-space: nowrap; }
+    /* the athlete: a round photo (initials underneath, in case it doesn't load) and the flag */
+    :global(.rt-ava) { position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; overflow: hidden;
+        background: var(--rt-uOutline, #5a5a5a); color: #fff; font-family: inherit; font-weight: 700; font-size: 15px; letter-spacing: 0.02em; }
+    :global(.rt-ava img) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    /* just the photo, no ring (owner's decision, 29 Oct) */
+    :global(.rt-ava.panel) { box-shadow: none; margin: 0; }
+    :global(.rt-flag) { display: inline-block; flex-shrink: 0; border-radius: 2px; box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.35); vertical-align: middle; }
+    :global(.rt-flag-e) { font-size: 0.95em; line-height: 1; }
+
+    /* ---------- on the map ---------- */
+    :global(.rt-marker) { background: none; border: 0; }
+    /* the boat: the athlete's photo in a ring (the heading is a little arrow on the ring), then the name, flag and speed */
+    :global(.rt-boat) { position: absolute; left: 0; top: 0; width: 0; height: 0; cursor: pointer; }
+    :global(.rt-boat .rt-ava.map) { position: absolute; left: -18px; top: -18px; width: 36px; height: 36px; font-size: 12px; box-shadow: 0 0 0 2.5px #fff, 0 0 0 5px var(--rt-boatLive, #3b8bff), 0 3px 10px rgba(0, 0, 0, 0.45); }
+    :global(.rt-boat.quiet .rt-ava.map) { box-shadow: 0 0 0 2.5px #fff, 0 0 0 5px var(--rt-boatStale, #9aa0a6), 0 3px 10px rgba(0, 0, 0, 0.45); }
+    :global(.rt-beam) { position: absolute; left: -56px; top: -56px; width: 112px; height: 112px; display: flex; color: var(--rt-boatLive, #3b8bff); transform-origin: 56px 56px; pointer-events: none; }
+    :global(.rt-boat.quiet .rt-beam) { color: var(--rt-boatStale, #9aa0a6); }
+    :global(.rt-tagline) { position: absolute; left: 26px; top: -12px; display: flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px; border-radius: 12px; white-space: nowrap;
+        background: var(--rt-boatBg, #141414); color: var(--rt-boatText, #f8f8f8); font-family: inherit; font-weight: 600; font-size: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
+    :global(.rt-tagline b) { font-weight: 600; }
+    :global(.rt-tagline em) { font-style: normal; font-weight: 600; font-size: 11px; opacity: 0.6; }
+    :global(.rt-pulse) { position: absolute; left: -26px; top: -26px; width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--rt-boatLive, #3b8bff); opacity: 0; animation: rt-pulse 2.4s ease-out infinite; pointer-events: none; }
+    :global(.rt-boat.quiet .rt-pulse) { display: none; }
+    @keyframes -global-rt-pulse { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(1.35); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { :global(.rt-pulse) { animation: none; } }
+    :global(.rt-dot) { position: absolute; border-radius: 50%; box-sizing: border-box; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45); }
+    :global(.rt-dot.start) { left: -7px; top: -7px; width: 14px; height: 14px; background: var(--rt-startFill, #3fb950); border: 2.5px solid var(--rt-startBorder, #f8f8f8); }
+    :global(.rt-dot.end) { left: -7px; top: -7px; width: 14px; height: 14px; background: var(--rt-endFill, #2f6fe4); border: 2.5px solid var(--rt-endBorder, #f8f8f8); }
+    :global(.rt-route-label) { position: absolute; transform: translate(12px, -50%); white-space: nowrap; font-family: inherit; font-weight: 600; font-size: 13px; color: var(--rt-routeLabel, #f8f8f8); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 0 8px rgba(0, 0, 0, 0.35); pointer-events: none; }
+    /* a position picked in the track list */
+    :global(.rt-picked) { position: absolute; transform: translate(-6px, -50%); display: flex; align-items: center; gap: 6px; white-space: nowrap; pointer-events: none; }
+    :global(.rt-picked i) { display: block; width: 12px; height: 12px; border-radius: 6px; background: var(--rt-pickBg, #2e2e2e); border: 2.5px solid var(--rt-highlight, #d49500); box-sizing: border-box; }
+    :global(.rt-picked span) { padding: 3px 8px; border-radius: 9px; background: var(--rt-pickBg, #2e2e2e); color: var(--rt-pickText, #f8f8f8); font-family: inherit; font-weight: 600; font-size: 11.5px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }

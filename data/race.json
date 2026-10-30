@@ -1,0 +1,67 @@
+{
+    "athlete": {
+        "name": "Milan Koláček",
+        "short": "Milan",
+        "boat": "Class40",
+        "boatName": "",
+        "country": "Czechia",
+        "flag": "CZ",
+        "photo": "milan.jpg",
+        "background": "boat-bg.jpg",
+        "url": "",
+        "links": [
+            {
+                "label": "Instagram",
+                "url": "https://www.instagram.com/milan_kolacek/"
+            },
+            {
+                "label": "Facebook",
+                "url": "https://www.facebook.com/milankolacekracing"
+            }
+        ]
+    },
+    "race": {
+        "name": "Route du Rhum – Destination Guadeloupe 2026",
+        "short": "Route du Rhum 2026",
+        "url": "https://www.routedurhum.com",
+        "about": "",
+        "links": []
+    },
+    "start": {
+        "name": "Saint-Malo",
+        "lat": 48.68,
+        "lon": -2.02,
+        "time": "2026-11-01T12:02:00Z"
+    },
+    "finish": {
+        "name": "Pointe-à-Pitre",
+        "lat": 16.22,
+        "lon": -61.53
+    },
+    "status": "racing",
+    "endTime": null,
+    "source": "Milan’s boat tracker",
+    "track": "track.json",
+    "follow": [
+        {
+            "name": "Windy.com",
+            "links": [
+                {
+                    "label": "Instagram",
+                    "url": "https://www.instagram.com/windy_forecast/"
+                },
+                {
+                    "label": "Facebook",
+                    "url": "https://www.facebook.com/windyforecast"
+                }
+            ]
+        }
+    ],
+    "watch": [
+        {
+            "layer": "currentsTide",
+            "phase": "before",
+            "text": "Saint-Malo has some of the biggest tides in Europe. At the start they push the whole fleet around."
+        }
+    ]
+}

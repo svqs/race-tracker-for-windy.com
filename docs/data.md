@@ -99,8 +99,8 @@ Set the feed in the repository: **Settings → Secrets and variables → Actions
 | Name | Kind | Value |
 |---|---|---|
 | `TRACK_FEED_TYPE` | variable | `yb` (YB / YellowBrick), `inreach` (Garmin MapShare KML feed) or `json` (a list of positions) |
-| `TRACK_FEED_URL` | variable | YB: the tracker's public map page, e.g. `https://app.yb.tl/<name>`; inReach: `https://share.garmin.com/Feed/Share/<MapShare name>` |
-| `TRACK_FEED_EVENT` | variable | YB only, if the map link has one: the event number (`…?event=1234`) |
+| `TRACK_FEED_URL` | variable | YB: the tracker's public map page (Milan: `https://my.yb.tl/oceancall/`); inReach: `https://share.garmin.com/Feed/Share/<MapShare name>` |
+| `TRACK_FEED_EVENT` | variable | YB only, optional: the event number; without it YB's default event is used (Milan: 17480) |
 | `TRACK_FEED_SPEED` | variable | YB only: the speed unit in YB's answer, `kn` (default), `kmh` or `ms` |
 | `TRACK_FEED_PASSWORD` | secret | only if the feed has a password |
 

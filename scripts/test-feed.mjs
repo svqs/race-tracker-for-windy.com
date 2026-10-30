@@ -19,7 +19,15 @@ const race = { athlete: { name: 'Milan Koláček' }, start: { name: 'Saint-Malo'
 
 // what the fake tracker answers, set per scenario
 let answer = { status: 200, type: 'application/json', body: '{}' };
+// YB's list of events for a tracker (asked first when no TRACK_FEED_EVENT is set), as my.yb.tl/oceancall answered
+let events = { events: [{ colour: '#FF0000', default: true, name: 'All time', start: '1970-01-01 00:00:00', startTime: 0, id: 17480, isFixed: true }] };
 const server = createServer((req, res) => {
+    if (req.url.includes('GetEvents')) {
+        server.lastEvents = req.url;
+        res.writeHead(200, { 'content-type': 'application/json' });
+        res.end(JSON.stringify(events));
+        return;
+    }
     server.last = req.url;
     res.writeHead(answer.status, { 'content-type': answer.type });
     res.end(answer.body);
@@ -76,7 +84,7 @@ await scenario('F2 YB: three positions come in, in time order, one per line, the
     assert.equal(t.points.length, 3);
     assert.ok(t.points.every((p, i, a) => !i || p.t > a[i - 1].t));
     assert.equal(raw(dir).split('\n').filter(l => l.includes('"t"')).length, 3, 'one position per line');
-    assert.ok(/keyword=milan/.test(server.last), `asks YB for the right tracker (${server.last})`);
+    assert.ok(/keyword=milan/.test(server.last) && /event=17480/.test(server.last), `asks YB for the right tracker and its event (${server.last})`);
     assert.ok(await checkData(dir));
 });
 await scenario('F3 YB answers the same again: "No new positions", the file is not touched (no commit)', async () => {
@@ -143,6 +151,39 @@ await scenario('F12 YB link without a tracker name: a clear error', async () => 
     const r = await run(dir, { ...YB_ENV, TRACK_FEED_URL: 'https://app.yb.tl/' });
     assert.notEqual(r.code, 0);
     assert.match(r.out, /TRACK_FEED_URL needs the YB page/);
+});
+await scenario('F17 YB without TRACK_FEED_EVENT: asks YB for the tracker\'s events and uses the default one', async () => {
+    const dir = folder(); answer = yb([ybPos(1)]);
+    events = { events: [{ id: 111, name: 'Old', startTime: 1 }, { id: 17480, name: 'All time', default: true, startTime: 0 }] };
+    const r = await run(dir, { ...YB_ENV, TRACK_FEED_URL: 'https://my.yb.tl/oceancall/' });
+    assert.equal(r.code, 0, r.out);
+    assert.ok(/keyword=oceancall/.test(server.lastEvents), server.lastEvents);
+    assert.ok(/keyword=oceancall/.test(server.last) && /event=17480/.test(server.last), server.last);
+    assert.equal(trackOf(dir).points.length, 1);
+    server.lastEvents = '';
+    await run(dir, { ...YB_ENV, TRACK_FEED_EVENT: '999' });
+    assert.ok(!server.lastEvents && /event=999/.test(server.last), 'TRACK_FEED_EVENT wins, no lookup');
+});
+await scenario('F18 YB answers {"error": …} (e.g. without an event): the run fails, track.json untouched', async () => {
+    const dir = folder([{ t: iso(START + H), lat: 48.5, lon: -2.4 }]); const before = raw(dir);
+    answer = { status: 200, type: 'application/json', body: '{"at":1793364793544,"error":"DispatcherException"}' };
+    const r = await run(dir, YB_ENV);
+    assert.notEqual(r.code, 0);
+    assert.match(r.out, /YB answered: DispatcherException/);
+    assert.equal(raw(dir), before);
+    events = { events: [] };
+    const r2 = await run(dir, YB_ENV);
+    assert.match(r2.out, /no event/);
+    events = { events: [{ id: 17480, name: 'All time', default: true, startTime: 0 }] };
+});
+await scenario('F19 YB times in milliseconds (as YB sends them) and an empty answer before the tracker reports', async () => {
+    const dir = folder(); answer = { status: 200, type: 'application/json', body: '{"drawRanges":[],"positions":[]}' };
+    const r = await run(dir, YB_ENV);
+    assert.equal(r.code, 0, r.out);
+    assert.equal(trackOf(dir).points.length, 0);
+    answer = yb([{ ...ybPos(2), at: START + 2 * H }]);
+    await run(dir, YB_ENV);
+    assert.equal(trackOf(dir).points[0].t, iso(START + 2 * H));
 });
 await scenario('F13 Garmin inReach (KML): positions with speed in km/h stored in knots', async () => {
     const dir = folder();

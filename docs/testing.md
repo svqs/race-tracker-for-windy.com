@@ -77,6 +77,9 @@ something changed and the check passed. Each scenario runs the real script in a 
 | F14 | A plain JSON list | Read |
 | F15 | Unknown feed type | A clear error, nothing written |
 | F16 | Feed password | Sent to the feed only; never written to `track.json` |
+| F17 | YB without `TRACK_FEED_EVENT` (my.yb.tl/oceancall) | Asks YB's GetEvents and uses the default event (17480, "All time"); `TRACK_FEED_EVENT` wins when set |
+| F18 | YB answers `{"error": …}` | The run fails with YB's message, file untouched; no event at all → a clear error |
+| F19 | YB times in milliseconds; an empty answer before the tracker reports | Read; nothing written |
 
 ## S · Browser (harness/test-scenarios.py)
 
@@ -145,7 +148,7 @@ phone view).
 - [ ] Break `data/track.json` on purpose in a branch: the `validate` workflow fails (red ✗).
 
 **First run against Milan's YB tracker**
-- [ ] Set `TRACK_FEED_TYPE=yb`, `TRACK_FEED_URL` (his public YB page), and `TRACK_FEED_EVENT` if the link has one.
+- [ ] Set `TRACK_FEED_TYPE=yb` and `TRACK_FEED_URL=https://my.yb.tl/oceancall/` (the event is found by itself).
 - [ ] Run the `update-track` workflow by hand. The log says how many positions were added.
 - [ ] Compare the newest position in `track.json` with YB's own map: the same place, the same time (UTC), the same
       speed. If speeds are ×1.85 off, set `TRACK_FEED_SPEED=kmh`; if the times are off by hours, tell a developer.

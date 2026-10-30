@@ -29,7 +29,7 @@ The repository must be **public**: the plugin reads `data/` from `raw.githubuser
 | Setting (Settings → Secrets and variables → Actions) | For |
 |---|---|
 | Secret `WINDY_API_KEY` ("Windy Plugins API" key from https://api.windy.com/keys) | publishing |
-| Variables `TRACK_FEED_TYPE` (`yb`), `TRACK_FEED_URL`, `TRACK_FEED_EVENT`; secret `TRACK_FEED_PASSWORD` if needed | the live track (until set, `update-track` does nothing) |
+| Variables `TRACK_FEED_TYPE` = `yb`, `TRACK_FEED_URL` = `https://my.yb.tl/oceancall/` | the live track from Milan's YB tracker (until set, `update-track` does nothing) |
 
 ## Publish
 

@@ -3,9 +3,9 @@
 // Which feed is set in the repository's Settings → Secrets and variables → Actions:
 //   variable TRACK_FEED_TYPE   yb (YB / YellowBrick tracker), inreach (Garmin MapShare KML feed) or json (a list of
 //                              positions); empty = manual updates only
-//   variable TRACK_FEED_URL    the tracker's public page or feed, e.g. https://app.yb.tl/<name> for YB,
+//   variable TRACK_FEED_URL    the tracker's public page or feed, e.g. https://my.yb.tl/<name> for YB,
 //                              https://share.garmin.com/Feed/Share/<MapShare name> for inReach
-//   variable TRACK_FEED_EVENT  YB only, when the page link has one: the event number (…?event=1234)
+//   variable TRACK_FEED_EVENT  YB only, optional: the event number (default: YB's default event for the tracker)
 //   variable TRACK_FEED_SPEED  YB only: the unit of the speeds in the feed, kn (default), kmh or ms
 //   secret   TRACK_FEED_PASSWORD  only if the feed has a password (Garmin MapShare: the MapShare password)
 //
@@ -61,20 +61,38 @@ async function inreach() {
 }
 
 /**
- * YB (YellowBrick) tracker: the positions behind its public map page (app.yb.tl/<name>), read from YB's map API
- * (APIX/Blog/GetPositions). Each position has "at" (time), lat, lng, speed and course.
- * Check the first run against the YB page: the speed unit and the time format aren't documented publicly.
+ * YB (YellowBrick) tracker: the positions behind its public map page (my.yb.tl/<name> or app.yb.tl/<name>), read from
+ * YB's map API (APIX/Blog/GetPositions?keyword=<name>&event=<number>), the same calls the page makes. YB needs the
+ * event number: without TRACK_FEED_EVENT, the default one from APIX/Blog/GetEvents is used (checked 30 Oct 2026 on
+ * my.yb.tl/oceancall: one event, "All time"). Each position has "at" (time, ms), lat, lng, speed and course.
+ * Check the first run against the YB page: the speed unit isn't documented publicly.
  */
 async function yb() {
     const page = new URL(url);
     const keyword = page.searchParams.get('keyword') || page.pathname.split('/').filter(Boolean).pop();
-    const event = process.env.TRACK_FEED_EVENT || page.searchParams.get('event') || '';
-    if (!keyword) throw new Error('TRACK_FEED_URL needs the YB page of the tracker, e.g. https://app.yb.tl/<name>');
+    if (!keyword) throw new Error('TRACK_FEED_URL needs the YB page of the tracker, e.g. https://my.yb.tl/<name>');
     const api = new URL(process.env.TRACK_FEED_API || 'https://app.yb.tl/APIX/Blog/GetPositions');
+    /** YB answers 200 with {"error": "..."} when it can't: that's a failed run, not "no new positions" */
+    const ask = async (u) => {
+        const body = JSON.parse(await get(u.toString()));
+        if (body && typeof body === 'object' && !Array.isArray(body) && body.error) throw new Error(`YB answered: ${body.error}`);
+        return body;
+    };
+    let event = process.env.TRACK_FEED_EVENT || page.searchParams.get('event') || '';
+    if (!event) {
+        const ev = new URL(api.toString().replace(/GetPositions/, 'GetEvents'));
+        ev.searchParams.set('keyword', keyword);
+        const events = (await ask(ev))?.events;
+        const list = Array.isArray(events) ? events : [];
+        const pick = list.find(e => e.default) || list.slice().sort((a, b) => (b.startTime || 0) - (a.startTime || 0))[0];
+        if (!pick?.id) throw new Error(`YB has no event for "${keyword}": set TRACK_FEED_EVENT`);
+        event = String(pick.id);
+        console.log(`YB event ${event} (${pick.name || 'no name'})`);
+    }
     api.searchParams.set('keyword', keyword);
-    if (event) api.searchParams.set('event', event);
+    api.searchParams.set('event', event);
     api.searchParams.set('_', String(Date.now()));
-    const body = JSON.parse(await get(api.toString()));
+    const body = await ask(api);
     const list = Array.isArray(body?.positions) ? body.positions : Array.isArray(body) ? body : [];
     const toKnots = { kn: 1, kt: 1, kmh: 1 / 1.852, ms: 1.943844 }[(process.env.TRACK_FEED_SPEED || 'kn').toLowerCase()] ?? 1;
     return list.map(p => {

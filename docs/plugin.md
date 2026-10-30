@@ -152,7 +152,7 @@ Sophia (the owner) is a designer at Windy. From her reviews, 27–29 Oct 2026:
 - **Not yet seen in real Windy end to end** (developer mode): the forecast opening on its Wind tab, the boat
   following, the layer buttons, phones. The sandbox fakes Windy. See testing.md, section M.
 - **YB reader not run against Milan's real tracker yet**: YB's API isn't documented publicly; the speed unit and the
-  time format need checking on the first run (testing.md, M). Milan's YB link and event number are still needed.
+  time format need checking on the first run (testing.md, M). Milan's tracker: `https://my.yb.tl/oceancall/` (event 17480, no positions yet on 30 Oct).
 - The Bariol Regular font file isn't embedded yet (`node scripts/embed-logo-font.mjs <file>`); until then the logo
   shows in Bariol only where it's installed.
 - "Conditions right now" uses ECMWF; Windy's own forecast below may show another model (the viewer's choice).

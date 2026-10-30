@@ -44,8 +44,10 @@ export function motion(points: TrackPoint[], i: number): { speed: number | null;
 }
 
 export function raceState(race: RaceInfo, track: RaceTrack, now = Date.now()): RaceState {
+    // the race's positions (from 6 h before the start); the newest of all is where the boat is now, also before the
+    // start (in the harbour, on the way there), shown on the map without a track
     const pts = track.points.filter(p => p.t >= race.start.time - 6 * 3600e3);
-    const last = pts[pts.length - 1] || null;
+    const last = track.points[track.points.length - 1] || null;
     const phase: Phase = race.status !== 'racing' ? race.status : now < race.start.time && !pts.some(p => p.t >= race.start.time) ? 'before' : 'racing';
     let sailed = 0;
     const racing = pts.filter(p => p.t >= race.start.time);
@@ -58,12 +60,12 @@ export function raceState(race: RaceInfo, track: RaceTrack, now = Date.now()): R
         phase, last,
         speed: phase === 'racing' ? speed : null,
         course: phase === 'racing' ? course : null,
-        toFinish: last && phase !== 'finished' ? distanceKm(last, race.finish) : phase === 'finished' ? 0 : distanceKm(race.start, race.finish),
+        toFinish: phase === 'finished' ? 0 : last && phase !== 'before' ? distanceKm(last, race.finish) : distanceKm(race.start, race.finish),
         sailed,
         elapsed,
         average: elapsed > 3600e3 && sailed > 0 ? (sailed * 1000) / (elapsed / 1000) : null,
         age,
-        quiet: phase === 'racing' && age !== null && age > QUIET,
+        quiet: (phase === 'racing' || phase === 'before') && age !== null && age > QUIET,
     };
 }
 

@@ -363,6 +363,8 @@
             track: 'track.json',
         };
         const points = [];
+        // before the start: the boat in Saint-Malo's harbour, its tracker on (one position 40 min ago)
+        if (scenario === 'before') points.push({ t: iso(now - 40 * 60e3), lat: 48.6458, lon: -2.0247, sog: 0, cog: null });
         if (scenario !== 'before' && scenario !== 'empty') {
             const total = legs.reduce((a, b) => a + b, 0);
             const until = scenario === 'finished' ? start + 14.2 * 864e5 : now - (scenario === 'quiet' ? 5.2 * 3600e3 : 11 * 60e3);

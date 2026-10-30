@@ -518,7 +518,9 @@
         const pts = track.points.filter(p => p.t >= race.start.time - 3600e3);
         return {
             race, points: pts, picked: picked ? { p: picked, label: dayTime(picked.t) } : null,
-            boat: st.last && st.phase !== 'before' ? { p: st.last, course: st.course, label: st.phase === 'racing' ? `${fmtSpeed(st.speed, S.wind)} ${windLabel(speedUnit(S.wind))}` : '', quiet: st.quiet || st.phase !== 'racing', photo } : null,
+            // before the start: where the boat is now (no speed, no track), grey once it's been 3 hours without a position
+            boat: st.last ? { p: st.last, course: st.course, label: st.phase === 'racing' ? `${fmtSpeed(st.speed, S.wind)} ${windLabel(speedUnit(S.wind))}` : '', quiet: st.quiet || (st.phase !== 'racing' && st.phase !== 'before'), photo } : null,
+            courseFrom: st.phase === 'before' ? race.start : undefined,
             showCourse: st.phase === 'before' || st.phase === 'racing',
             onBoat: () => boatTapped(),
         };

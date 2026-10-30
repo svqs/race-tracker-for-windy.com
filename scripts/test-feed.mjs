@@ -222,6 +222,31 @@ await scenario('F16 the feed password is sent to the feed (and only there)', asy
     assert.ok(!raw(dir).includes('s3cret'), 'the password never ends up in track.json');
 });
 
+await scenario('F20 the first run, days before the start: the last day\'s positions come in (the boat in the harbour)', async () => {
+    const early = { ...race, start: { ...race.start, time: iso(NOW + 48 * H) } };
+    const dir = folder();
+    writeFileSync(path.join(dir, 'data/race.json'), JSON.stringify(early));
+    const at = h => ({ at: NOW + h * H, lat: 48.6458, lng: -2.0247, speed: 0, course: 0 });
+    answer = yb([at(-30), at(-2), at(-0.5)]);
+    const r = await run(dir, YB_ENV);
+    assert.equal(r.code, 0, r.out);
+    assert.equal(trackOf(dir).points.length, 2, 'the last day only');
+    assert.ok(await checkData(dir));
+});
+
+await scenario('F21 YB\'s real answer (my.yb.tl/oceancall, 30 Oct 2026: short names "t" and "g", no speed): read', async () => {
+    const early = { ...race, start: { ...race.start, time: iso(NOW + 48 * H) } };
+    const dir = folder();
+    writeFileSync(path.join(dir, 'data/race.json'), JSON.stringify(early));
+    const at = NOW - 40 * 60e3;
+    answer = { status: 200, type: 'application/json;charset=utf-8', body: JSON.stringify({ drawRanges: [{ start: 0, end: 0, event: { colour: '#FF0000', default: true, name: 'All time', id: 17480, isFixed: true } }],
+        positions: [{ at, t: 48.64841000000001, g: -2.022529999999989, id: 1280023014 }] }) };
+    const r = await run(dir, { ...YB_ENV, TRACK_FEED_URL: 'https://my.yb.tl/oceancall/' });
+    assert.equal(r.code, 0, r.out);
+    assert.deepEqual(trackOf(dir).points, [{ t: iso(at), lat: 48.64841, lon: -2.02253, sog: null, cog: null }]);
+    assert.ok(await checkData(dir));
+});
+
 server.close();
 const bad = results.filter(r => r[0] === '✗');
 for (const r of results) {console.log(r.join('  '));}

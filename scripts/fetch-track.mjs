@@ -27,10 +27,11 @@ const num = v => (v === null || v === undefined || v === '' ? null : Number.isFi
 const place = (lat, lon) => (lat !== null && lon !== null && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180);
 const old = JSON.parse(readFileSync(FILE, 'utf8'));
 const points = Array.isArray(old.points) ? old.points : [];
-// ask for positions since the last one we have (or since 6 hours before the start)
+// ask for positions since the last one we have; the first time, from the last day (so before the start the boat
+// shows where it is now) or from 6 hours before the start, whichever is earlier
 // (a stored position from the future, from before this check existed, doesn't count)
 const known = points.map(p => Date.parse(p.t)).filter(t => isFinite(t) && t <= Date.now() + 3600e3);
-const since = known.length ? Math.max(...known) : Date.parse(race.start.time) - 6 * 3600e3;
+const since = known.length ? Math.max(...known) : Math.min(Date.parse(race.start.time) - 6 * 3600e3, Date.now() - 24 * 3600e3);
 
 const headers = { 'user-agent': 'racetrack-windy-plugin (github action)' };
 if (password) headers.authorization = 'Basic ' + Buffer.from(`:${password}`).toString('base64');
@@ -64,7 +65,8 @@ async function inreach() {
  * YB (YellowBrick) tracker: the positions behind its public map page (my.yb.tl/<name> or app.yb.tl/<name>), read from
  * YB's map API (APIX/Blog/GetPositions?keyword=<name>&event=<number>), the same calls the page makes. YB needs the
  * event number: without TRACK_FEED_EVENT, the default one from APIX/Blog/GetEvents is used (checked 30 Oct 2026 on
- * my.yb.tl/oceancall: one event, "All time"). Each position has "at" (time, ms), lat, lng, speed and course.
+ * my.yb.tl/oceancall: one event, "All time"). Each position has "at" (time, ms), "t" (latitude), "g" (longitude);
+ * speed and course aren't in it (the plugin works them out from the positions).
  * Check the first run against the YB page: the speed unit isn't documented publicly.
  */
 async function yb() {
@@ -99,11 +101,13 @@ async function yb() {
         const at = Number(p.at);
         const t = Number.isFinite(at) && at > 0 ? new Date(at < 1e11 ? at * 1000 : at) : new Date(p.datetime);
         if (Number.isNaN(t.getTime())) return null;
-        const lat = num(p.lat);
-        const lon = num(p.lng ?? p.lon);
+        // YB's map feed uses short names (seen 30 Oct 2026 on my.yb.tl/oceancall: {"at": ms, "t": lat, "g": lon, "id"});
+        // longer ones (lat, lng, speed, course) are read too
+        const lat = num(p.lat ?? p.t);
+        const lon = num(p.lng ?? p.lon ?? p.g);
         if (!place(lat, lon)) return null;
-        const speed = num(p.speed);
-        const course = num(p.course);
+        const speed = num(p.speed ?? p.s);
+        const course = num(p.course ?? p.c);
         return { t: t.toISOString(), lat: +lat.toFixed(5), lon: +lon.toFixed(5),
             sog: speed !== null ? +(speed * toKnots).toFixed(1) : null, cog: course !== null ? Math.round(course) : null };
     }).filter(Boolean);

@@ -32,7 +32,7 @@ lists every test scenario and the checks to do by hand in real Windy.
   `src/lib/layers.ts` + copy.ts, changeable in race.json `watch`), the boat's numbers. Windy's own point forecast is
   open below the map (desktop), on its Wind tab; the map is on Wind whenever racetrack opens (owner, 30 Oct).
   Phones: the same three buttons in the bar; each opens its page in the panel and moves the map above it.
-- **Phases:** before the start (countdown, wind at the start, the course), racing (live), quiet (no position for
+- **Phases:** before the start (countdown, wind at the start, the course; the boat where it is now, no track), racing (live), quiet (no position for
   3 hours: the boat turns grey; the Now page only ever says when the last position came, no other notes), finished or retired (race time, sailed, average).
 - **Data:** two JSON files in this repository, read by everyone. See [docs/data.md](docs/data.md).
 

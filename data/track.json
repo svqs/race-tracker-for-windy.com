@@ -1,4 +1,6 @@
 {
-    "updated": null,
-    "points": []
+    "updated": "2026-10-30T13:20:02.000Z",
+    "points": [
+        {"t":"2026-10-30T13:00:00.000Z","lat":48.64841,"lon":-2.02253,"sog":null,"cog":null}
+    ]
 }

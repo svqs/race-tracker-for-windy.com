@@ -52,6 +52,7 @@ The plugin fetches two files from GitHub every 5 minutes. These scenarios feed i
 | D22 | Started, no position yet | Racing, no boat |
 | D23 | Before the start | Countdown phase, the whole course to go |
 | D24 | Finished / retired | No live speed; the race time |
+| D26 | Before the start, a position in the harbour | The boat shows there; no track, nothing sailed; grey after 3 h without a position |
 | D25 | `watch` (things to look out for) | Only Windy layers racetrack knows, with a line; a line replaces racetrack's for that layer, a new layer goes first, at most four; `phase` before/racing; the defaults otherwise |
 
 ## F · Feed (scripts/test-feed.mjs)
@@ -80,6 +81,8 @@ something changed and the check passed. Each scenario runs the real script in a 
 | F17 | YB without `TRACK_FEED_EVENT` (my.yb.tl/oceancall) | Asks YB's GetEvents and uses the default event (17480, "All time"); `TRACK_FEED_EVENT` wins when set |
 | F18 | YB answers `{"error": …}` | The run fails with YB's message, file untouched; no event at all → a clear error |
 | F19 | YB times in milliseconds; an empty answer before the tracker reports | Read; nothing written |
+| F20 | The first run, days before the start | The last day's positions come in (the boat in the harbour) |
+| F21 | YB's real answer (my.yb.tl/oceancall, 30 Oct: `t` latitude, `g` longitude, no speed) | Read exactly |
 
 ## S · Browser (harness/test-scenarios.py)
 
@@ -91,7 +94,7 @@ changes the photo behind the panel, `&embed` hides the pills.
 |---|---|---|
 | S1 | `racing` (day 4) | Three buttons, Find Milan selected; "Last position 12 min ago"; the boat on the map in live blue; three conditions; Windy's forecast below the map on its Wind tab; the map on Wind; Wind, Waves, Pressure, Ocean currents to look out for, Wind marked; no extra notes |
 | S2 | `quiet` (no position for 5 h) | "Last position 5 h ago" and nothing else; the boat grey, no pulse |
-| S3 | `before` | "The race hasn’t started yet"; countdown; "Conditions at the start"; no boat; the middle button says "The course" |
+| S3 | `before` (the boat in the harbour) | "The race hasn’t started yet"; the boat where it is, no speed, no track; countdown; "Conditions at the start"; no boat; the middle button says "The course" |
 | S4 | `finished` | "Finished in…"; race time instead of live speed; the boat grey |
 | S5 | `retired` | "Out of the race"; race time; the boat grey |
 | S6 | `empty` (started, no position yet) | The panel shows, no boat; "The race has started. Milan’s first position shows up here soon."; Track says there are no positions yet |

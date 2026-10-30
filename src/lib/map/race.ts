@@ -15,7 +15,9 @@ export interface RaceHost {
 export interface RaceView {
     race: RaceInfo;
     points: TrackPoint[];
-    /** null before the start */
+    /** where the dotted line to the finish starts (default: the boat, or the start) */
+    courseFrom?: { lat: number; lon: number };
+    /** null until there's a position */
     boat: { p: TrackPoint; course: number | null; label: string; quiet: boolean; photo: string } | null;
     /** a position picked in the track list */
     picked: { p: TrackPoint; label: string } | null;
@@ -51,7 +53,7 @@ export function createRaceLayer(host: RaceHost) {
             try {
                 const { race } = v;
                 const latlngs = v.points.map(p => [p.lat, p.lon] as [number, number]);
-                const from = v.boat?.p ?? race.start;
+                const from = v.courseFrom ?? v.boat?.p ?? race.start;
                 if (v.showCourse) {
                     layers.push(host.line(greatCircle(from, race.finish), { color: THEME.courseColor, weight: THEME.courseWidth, opacity: THEME.courseAlpha, dashArray: THEME.courseDash }));
                 }
@@ -84,6 +86,7 @@ export function createRaceLayer(host: RaceHost) {
         fitAll(v: RaceView): void {
             const pts: [number, number][] = v.points.map(p => [p.lat, p.lon]);
             pts.push([v.race.start.lat, v.race.start.lon], [v.race.finish.lat, v.race.finish.lon]);
+            if (v.boat) {pts.push([v.boat.p.lat, v.boat.p.lon]);}
             host.fit(pts);
         },
         clear(): void {

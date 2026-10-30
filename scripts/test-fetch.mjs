@@ -193,6 +193,16 @@ await scenario('D23 before the start: the countdown phase, the whole course to g
     assert.equal(st.phase, 'before');
     assert.ok(st.toFinish > 6000, `${Math.round(st.toFinish)} km`);
 });
+await scenario('D26 before the start, a position in the harbour two days before: the boat shows there; no track, nothing sailed', async () => {
+    const harbour = { t: iso(START - 48 * H), lat: 48.6458, lon: -2.0247, sog: 0 };
+    const st = L.raceState(R, L.readTrack({ points: [harbour] }), START - 47 * H);
+    assert.equal(st.phase, 'before');
+    assert.ok(st.last && Math.abs(st.last.lat - 48.6458) < 1e-6, 'the boat is where it is');
+    assert.equal(st.sailed, 0);
+    assert.ok(st.toFinish > 6000, 'still the whole course to go');
+    assert.equal(st.quiet, false, 'an hour ago: live');
+    assert.equal(L.raceState(R, L.readTrack({ points: [harbour] }), START - 40 * H).quiet, true, '8 hours without a position: grey');
+});
 await scenario('D24 finished / retired: no live speed, the race time', async () => {
     for (const status of ['finished', 'retired']) {
         const st = L.raceState({ ...R, status, endTime: START + 4 * H }, T, NOW);

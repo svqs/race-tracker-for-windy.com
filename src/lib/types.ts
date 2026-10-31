@@ -47,6 +47,8 @@ export interface RaceInfo {
     watch: Watch[];
     /** videos from the athlete (YouTube), newest first; empty: the Video page says they're coming */
     videos: Video[];
+    /** the YouTube playlist of the athlete's videos (race.json youtube.playlist): phones open the newest video in it */
+    playlist: string;
     /** where the positions come from, shown on About */
     source: string;
     /** the track file next to race.json (or a full https URL) */

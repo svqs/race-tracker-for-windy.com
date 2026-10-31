@@ -291,14 +291,13 @@ with sync_playwright() as p:
     ctx, pg = open_page(b, 'scenario=racing&video=auto')
     check('S19 video: found by the Action (data/videos.json) → it shows too', 'aqz-KE-bpKQ' in (pg.get_attribute('.poster img', 'src') or ''))
     ctx.close()
-    ctx, pg = open_page(b, 'scenario=racing&video=short', w=390, h=844, phone=True)
-    pg.click('.mact >> nth=0'); pg.wait_for_timeout(700)
-    pg.evaluate("document.querySelector('.vid').scrollIntoView({ block: 'start' })"); pg.wait_for_timeout(300)
-    box = pg.locator('.player').bounding_box()
-    bottom = pg.evaluate('document.querySelector(".mwrap").getBoundingClientRect().bottom')
-    check('S19 video phone: the Short in the panel, upright, the whole video fits in the panel', box and box['width'] <= 271 and box['height'] <= bottom - 60, (box, bottom))
-    shot(pg, 'S19-video-phone', phone=True)
-    ctx.close()
+    for q, want in [('wide', 'https://www.youtube.com/watch?v=aqz-KE-bpKQ&list=PLsample12345'), ('short', 'https://www.youtube.com/shorts/jNQXAC9IVRw')]:
+        ctx, pg = open_page(b, f'scenario=racing&video={q}', w=390, h=844, phone=True)
+        pg.click('.mact >> nth=0'); pg.wait_for_timeout(700)
+        a_ = pg.evaluate("(() => { const a = document.querySelector('.mwrap.open .vlink'); return a && [a.href, a.target, a.rel, a.innerText]; })()")
+        check(f'S19 video phone ({q}): a link "Watch video updates from the boat" to the newest video on YouTube (in the playlist), no player', bool(a_) and a_[0] == want and a_[1] == '_blank' and 'noopener' in a_[2] and 'Watch video updates from the boat' in a_[3] and pg.locator('.mwrap .player').count() == 0, a_)
+        if q == 'wide': shot(pg, 'S19-video-phone', phone=True)
+        ctx.close()
 
     # S18 phones ---------------------------------------------------------------------------------------------------
     for w in [320, 390]:

@@ -368,6 +368,7 @@
             about: 'The first Czech skipper ever at the Route du Rhum: solo and non-stop across the Atlantic, from Saint-Malo to Guadeloupe. (Sample data for testing.)',
             follow: [{ name: 'Windy.com', links: [{ label: 'Instagram', url: 'https://www.instagram.com/windy_forecast/' }, { label: 'Facebook', url: 'https://www.facebook.com/windyforecast' }] }],
             videos: videoQ === 'auto' ? [] : VIDEOS[videoQ] || [],
+            youtube: { playlist: 'PLsample12345' },
             source: 'made-up positions for this sandbox',
             track: 'track.json',
         };

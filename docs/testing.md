@@ -121,7 +121,7 @@ changes the photo behind the panel, `&embed` hides the pills.
 | S15 | Windy's forecast and layers | No forecast card while it's at the boat; Whole race → it stays open; opened elsewhere + Find Milan → back at the boat on Wind; opened elsewhere → "Back to Milan" → back on Wind; Pressure → Windy's map on pressure, marked; pages keep the layer; a layer picked in Windy is marked; opening again → Wind; before the start Tidal currents; the real race.json's Saint-Malo line |
 | S16 | Scrolling | The top card stays at the top; nothing (Windy's forecast included) draws over it |
 | S17 | The Follow page | Milan ×2, Windy.com ×2, the race website; every link https, new tab, noopener; no second header |
-| S19 | The video card (`&video=wide`, `short`, `both`, `auto`) | No video: no card; right under the conditions; first the thumbnail and a play button (no YouTube player, so no YouTube title bar), play starts it; the title under it regular, not bold; wide 16:9 and Shorts upright, privacy-enhanced YouTube; the earlier one listed and playable; the player goes when leaving the page; found by the Action (videos.json) shows too; on a phone the whole upright player fits the panel |
+| S19 | The video card (`&video=wide`, `short`, `both`, `auto`) | No video: no card; right under the conditions; first the thumbnail and a play button (no YouTube player, so no YouTube title bar), play starts it; the title under it regular, not bold; wide 16:9 and Shorts upright, privacy-enhanced YouTube; the earlier one listed and playable; the player goes when leaving the page; found by the Action (videos.json) shows too; on a phone a link "Watch video updates from the boat" to the newest video on YouTube (in the playlist; a Short as a Short), no player |
 | S18 | Phones 320 and 390 px | Three buttons in the bar, names whole; Find Milan stays out (a box over 2° across, at most zoom 7: no outdoor map); Find Milan opens the Now page with the boat above the panel; nothing sticks out sideways; the same button closes the panel |
 
 Every scenario also checks that the page threw no script errors.
@@ -153,7 +153,7 @@ phone view).
 
 **Phone**
 - [ ] The bar under the timeline: Race Tracker and three buttons.
-- [ ] Video: once there is one, it plays on Find Milan's page under the conditions (a Short upright).
+- [ ] Video: on a phone, "Watch video updates from the boat" under the conditions opens the newest video in YouTube.
 - [ ] Find Milan opens the Now page in a panel over the map, the boat visible above it; the same button closes it.
 - [ ] Whole race shows the race above the panel; Follow Milan shows the links.
 - [ ] "Show" on the Now page opens Windy's forecast over the map.

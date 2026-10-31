@@ -63,6 +63,7 @@ export function readRace(value: unknown): RaceInfo | null {
         }).filter((x, i, all) => isLayer(x.layer) && x.text && all.findIndex(y => y.layer === x.layer && y.phase === x.phase) === i),
         // videos (YouTube, watch / youtu.be / shorts / embed / live links): "videos": [{ "url", "title", "date" }], newest first
         videos: readVideos(o.videos ?? (o.video ? [o.video] : [])),
+        playlist: /^[\w-]{10,64}$/.test(str(rec(o.youtube)?.playlist, 80)) ? str(rec(o.youtube)?.playlist, 80) : '',
         source: str(o.source, 400),
         track: track && !/^(javascript|data):/i.test(track) ? track : 'track.json',
     };

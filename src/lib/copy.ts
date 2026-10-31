@@ -72,6 +72,7 @@ export const COPY_GROUPS: CopyGroup[] = [
     { id: 'video', title: 'Video (Find Milan’s page, only when there is one)', items: [
         ['videoTitle', 'From the boat', 'Heading of the video card'],
         ['videoEarlier', 'Earlier videos'],
+        ['videoWatch', 'Watch video updates from the boat', 'Phones: the link that opens the newest video on YouTube'],
         ['videoPlay', 'Play “{title}”'],
         ['videoUntitled', 'Video from {short}'],
     ] },

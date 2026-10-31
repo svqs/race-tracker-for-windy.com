@@ -91,7 +91,15 @@
             />
 
         <!-- the athlete's newest video (race.json "videos", or found by the update-track Action: data/videos.json); only when there is one -->
-        {#if video}
+        {#if video && isMobile}
+            <!-- phones: a link to the newest video on YouTube (in the playlist, so the next ones follow). YouTube's player
+                 refuses to play inside some phone setups (Windy's app: error 153), so phones don't embed it (owner, 31 Oct) -->
+            <a class="card vlink" href={ youtubeLink(video, race.playlist) } target="_blank" rel="noopener noreferrer">
+                <span class="vthumb"><img src={ `https://i.ytimg.com/vi/${video.id}/mqdefault.jpg` } alt="" loading="lazy" referrerpolicy="no-referrer" on:error={ hideImg } /><span class="pbtn small"><svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="#fff" /></svg></span></span>
+                <span class="grow"><b>{ W.videoWatch }</b><small>{ video.title || fill(W.videoUntitled, { short: race.athlete.short }) }</small></span>
+                <span class="go" aria-hidden="true">↗</span>
+            </a>
+        {:else if video}
             <div class="card vid">
                 <b>{ W.videoTitle }</b>
                 <div class="player" class:tall={ video.vertical }>
@@ -394,6 +402,9 @@
     let videoId = '';
     /** the video whose YouTube player is on (pressed play); none when the page changes, so it never starts by itself */
     let playing = '';
+    /** a video on YouTube: a Short as a Short; otherwise in the playlist (if there is one) so the next ones follow */
+    const youtubeLink = (v: { id: string; vertical: boolean }, playlist: string): string =>
+        v.vertical ? `https://www.youtube.com/shorts/${v.id}` : `https://www.youtube.com/watch?v=${v.id}${playlist ? `&list=${playlist}` : ''}`;
     /** a thumbnail that doesn't load: nothing (not the browser's broken-picture mark) */
     const hideImg = (e: Event) => { (e.currentTarget as HTMLElement).style.visibility = 'hidden'; };
     $: video = race?.videos.find(v => v.id === videoId) ?? race?.videos[0] ?? null;

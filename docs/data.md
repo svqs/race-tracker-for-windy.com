@@ -72,7 +72,8 @@ the boat sent it.
     it shows. Shorts are found and play upright.
   - by hand: `"videos": [{ "url": "https://youtube.com/shorts/…", "title": "Reefing for the night", "date": "2026-11-03T18:00:00Z" }]`.
     Any YouTube link works (watch, youtu.be, shorts, live); `"vertical": true` for an upright video posted as a normal one.
-  The newest plays; up to three earlier ones are listed under it.
+  The newest plays; up to three earlier ones are listed under it. Phones show a link to the newest video on YouTube
+  instead (YouTube's player refuses to play inside some phone setups).
 - `official` is the organisers' tracker (`url`, and `boat`: its number there, Milan's is 59). The update-track Action
   reads it and never publishes a position the official map doesn't show yet (`scripts/official.mjs`); its log compares
   our track with theirs. If the official map is down for long, set the variable `OFFICIAL_CHECK` = `off`.

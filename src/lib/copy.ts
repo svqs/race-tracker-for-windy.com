@@ -18,10 +18,10 @@ export const COPY_GROUPS: CopyGroup[] = [
         ['wordmark', 'Race Tracker', 'The logo (Bariol Regular)'],
         ['tagLive', 'live'], ['tagSoon', 'soon'], ['tagFinished', 'finished'], ['tagRetired', 'retired'],
         ['tabNow', 'Now'], ['tabTrack', 'Track'], ['tabAbout', 'About'],
-        ['titleNow', 'Right now', 'Phone: title of the Now panel'], ['titleTrack', 'The track', 'Phone: title of the Track panel'], ['titleAbout', 'Follow {short}', 'Phone: title of the Follow page'],
+        ['titleNow', 'Right now', 'Phone: title of the Now panel'], ['titleTrack', 'The track', 'Phone: title of the Track panel'], ['titleAbout', 'Follow {short}', 'Phone: title of the Follow page'], ['titleVideo', 'Video from {short}', 'Phone: title of the Video page'],
         ['actFind', 'Find {short}', 'Button: the Now page, and the map goes to the boat'], ['actFindSub', 'on the map'],
         ['actWhole', 'Whole race'], ['actWholeSub', 'track so far'], ['actWholeBefore', 'The course'], ['actWholeBeforeSub', 'start to finish'],
-        ['actAbout', 'Follow {short}', 'Button: their social media, Windy’s, and the race website'], ['actForecast', 'Forecast'], ['actForecastSub', 'Windy, right there'],
+        ['actVideo', 'Video', 'Button: the Video page (YouTube videos from the athlete)'], ['actAbout', 'Follow {short}', 'Button: their social media, Windy’s, and the race website'], ['actForecast', 'Forecast'], ['actForecastSub', 'Windy, right there'],
         ['close', 'Close'], ['back', 'Back'], ['windyMenu', 'Windy’s menu'],
     ] },
     { id: 'head', title: 'The top card', items: [
@@ -68,6 +68,13 @@ export const COPY_GROUPS: CopyGroup[] = [
         ['sail1', 'Upwind'], ['sail2', 'Close reach'], ['sail3', 'Beam reach'], ['sail4', 'Broad reach'], ['sail5', 'Downwind'],
         ['sailAngle', 'Wind {angle}° off his bow'],
         ['waitTitle', 'Waiting for the start'], ['waitText', 'The track shows up here and on the map once {short} is racing.'],
+    ] },
+    { id: 'video', title: 'Video', items: [
+        ['videoTitle', 'From the boat', 'Heading of the Video page'],
+        ['videoNone', '{short} will send videos from the boat about what he’s facing out there. The newest shows up here.'],
+        ['videoEarlier', 'Earlier videos'],
+        ['videoPlay', 'Play “{title}”'],
+        ['videoUntitled', 'Video from {short}'],
     ] },
     { id: 'track', title: 'Track', items: [
         ['trackIntro', 'Newest first, about one an hour. Tap one to see it on the map.'],

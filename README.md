@@ -5,7 +5,8 @@ distance to the finish, the conditions where the boat is, and which Windy layers
 in the **Route du Rhum 2026** (Saint-Malo → Guadeloupe, start 1 November 2026).
 
 Everyone sees the same data: `data/race.json` (who and which race, edited by hand) and `data/track.json` (the
-positions, added every 15 minutes by the `update-track` workflow from the boat's tracker). See [docs/data.md](docs/data.md).
+positions, added every 15 minutes by the `update-track` workflow from the boat's tracker, never ahead of the official
+race tracker). Videos for the Video page go in `race.json` too (`videos`). See [docs/data.md](docs/data.md).
 
 ## Develop
 

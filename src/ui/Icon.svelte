@@ -19,6 +19,9 @@
     {:else if name === 'person'}
         <circle cx="12" cy="8" r="3.5" />
         <path d="M5 20.5a7 7 0 0 1 14 0" />
+    {:else if name === 'play'}
+        <rect x="3" y="5" width="18" height="14" rx="3.5" />
+        <path d="M10.2 9.3v5.4l4.6-2.7z" />
     {:else if name === 'flag'}
         <path d="M5.5 21V4" />
         <path d="M5.5 4.5h11l-2.5 3.5 2.5 3.5h-11" />
@@ -26,7 +29,7 @@
 </svg>
 
 <script lang="ts">
-    export let name: 'boat' | 'route' | 'weather' | 'map' | 'flag' | 'person';
+    export let name: 'boat' | 'route' | 'weather' | 'map' | 'flag' | 'person' | 'play';
     export let size = 20;
 </script>
 

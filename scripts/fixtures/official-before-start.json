@@ -1,0 +1,11 @@
+{
+    "id": "59",
+    "name": "Inland Roots, Ocean Soul",
+    "state": "RUNNING",
+    "standby": true,
+    "start": 1793534520000,
+    "points": [
+        { "t": 1793534733000, "lat": 48.6481, "lon": -2.0219 },
+        { "t": 1793538000000, "lat": 48.6489, "lon": -2.0223 }
+    ]
+}

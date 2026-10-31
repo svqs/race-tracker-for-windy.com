@@ -1,6 +1,7 @@
 name: update-track
 # Every 15 minutes: copy new positions from the tracker's feed into data/track.json.
 # The feed is set in Settings → Secrets and variables → Actions (see docs/data.md). Without one, nothing happens.
+# With race.json "official", positions wait until the organisers' map shows them (scripts/official.mjs, headless Chrome).
 on:
     schedule:
         - cron: '*/15 * * * *'
@@ -13,7 +14,7 @@ concurrency:
 jobs:
     update:
         runs-on: ubuntu-latest
-        timeout-minutes: 5
+        timeout-minutes: 8
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
@@ -28,6 +29,7 @@ jobs:
                   TRACK_FEED_PASSWORD: ${{ secrets.TRACK_FEED_PASSWORD }}
                   TRACK_FEED_EVENT: ${{ vars.TRACK_FEED_EVENT }}
                   TRACK_FEED_SPEED: ${{ vars.TRACK_FEED_SPEED }}
+                  OFFICIAL_CHECK: ${{ vars.OFFICIAL_CHECK }}
               run: node scripts/fetch-track.mjs data/track.json
             - name: Check the files (a broken file is never committed)
               run: node scripts/check-data.mjs data

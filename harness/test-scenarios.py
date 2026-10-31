@@ -19,6 +19,8 @@ WHERE_FC = """(() => { const n = document.getElementById('plugin-detail');
   return !n || !n.isConnected ? 'closed' : n.closest('.racetrack') ? 'in the panel' : 'under map'; })()"""
 FC_TAB = "(document.querySelector('#plugin-detail .switch__item.selected') || {}).textContent || ''"
 LAYER = "W.store.get('overlay')"
+# names cut off (… or clipped) in the button row
+CUT = "sel => [...document.querySelectorAll(sel)].filter(e => e.scrollWidth > e.clientWidth + 1).map(e => e.textContent)"
 
 
 def check(name, ok, detail=''):
@@ -55,7 +57,7 @@ with sync_playwright() as p:
 
     # S1 racing ---------------------------------------------------------------------------------------------------
     ctx, pg = open_page(b, 'scenario=racing')
-    check('S1 racing: three buttons', pg.locator('.act').all_inner_texts() == ['Find Milan', 'Whole race', 'Follow Milan'], pg.locator('.act').all_inner_texts())
+    check('S1 racing: four buttons', pg.locator('.act').all_inner_texts() == ['Find Milan', 'Whole race', 'Video', 'Follow Milan'], pg.locator('.act').all_inner_texts())
     check('S1 racing: Find Milan is selected', text(pg, '.act.on') == 'Find Milan')
     check('S1 racing: says when the last position came', 'Last position 12 min ago' in text(pg, '.status-line'), text(pg, '.status-line'))
     check('S1 racing: the boat is on the map, live (blue)', pg.locator('.rt-boat:not(.quiet)').count() == 1)
@@ -249,17 +251,51 @@ with sync_playwright() as p:
 
     # S17 the Follow page ------------------------------------------------------------------------------------------
     ctx, pg = open_page(b, 'scenario=racing')
-    pg.click('.act >> nth=2'); pg.wait_for_timeout(300)
+    pg.click('.act >> nth=3'); pg.wait_for_timeout(300)
     links = pg.evaluate("[...document.querySelectorAll('.about .lnk')].map(a => [a.textContent.trim(), a.href, a.target, a.rel])")
     check('S17 follow: Milan ×2, Windy.com ×2, the race website', len(links) == 5, links)
     check('S17 follow: every link https, in a new tab, noopener', all(l[1].startswith('https://') and l[2] == '_blank' and 'noopener' in l[3] for l in links), links)
     check('S17 follow: no second header (no photo, name or about text repeated)', pg.locator('.about .rt-ava').count() == 0)
     ctx.close()
 
+    # S19 the Video page --------------------------------------------------------------------------------------------
+    ctx, pg = open_page(b, 'scenario=racing')
+    check('S19 video: the four names fit on desktop', pg.evaluate(CUT, '.act b') == [], pg.evaluate(CUT, '.act b'))
+    pg.click('.act >> nth=2'); pg.wait_for_timeout(300)
+    check('S19 video: no video yet → it says one is coming, no player', 'will send videos from the boat' in text(pg, '.vid') and pg.locator('.vid iframe').count() == 0, text(pg, '.vid'))
+    shot(pg, 'S19-video-none')
+    ctx.close()
+    ctx, pg = open_page(b, 'scenario=racing&video=wide')
+    pg.click('.act >> nth=2'); pg.wait_for_timeout(400)
+    src = pg.get_attribute('.vid iframe', 'src') or ''
+    box = pg.locator('.player').bounding_box()
+    check('S19 video: a YouTube video plays in the page, wide (16:9), privacy-enhanced, no related videos from others', src.startswith('https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ') and 'rel=0' in src and box and abs(box['width'] / box['height'] - 16 / 9) < 0.02, (src, box))
+    check('S19 video: its title and when it was posted', 'Sample: a wide video' in text(pg, '.vmeta'), text(pg, '.vmeta'))
+    shot(pg, 'S19-video-wide')
+    ctx.close()
+    ctx, pg = open_page(b, 'scenario=racing&video=both')
+    pg.click('.act >> nth=2'); pg.wait_for_timeout(400)
+    box = pg.locator('.player').bounding_box()
+    check('S19 video: a YouTube Short plays upright (9:16), the newest first', 'jNQXAC9IVRw' in (pg.get_attribute('.vid iframe', 'src') or '') and box and abs(box['height'] / box['width'] - 16 / 9) < 0.02, box)
+    check('S19 video: earlier videos listed below', pg.locator('.vitem').count() == 1)
+    shot(pg, 'S19-video-short')
+    pg.click('.vitem'); pg.wait_for_timeout(300)
+    check('S19 video: tapping an earlier one plays it instead', 'aqz-KE-bpKQ' in (pg.get_attribute('.vid iframe', 'src') or '') and 'jNQXAC9IVRw' in (pg.get_attribute('.vitem img', 'src') or ''))
+    pg.click('.act >> nth=0'); pg.wait_for_timeout(300)
+    check('S19 video: leaving the page stops the video (the player is gone)', pg.locator('.vid iframe').count() == 0)
+    no_errors(pg, 'S19')
+    ctx.close()
+    ctx, pg = open_page(b, 'scenario=racing&video=short', w=390, h=844, phone=True)
+    pg.click('.mact >> nth=2'); pg.wait_for_timeout(600)
+    box = pg.locator('.player').bounding_box()
+    check('S19 video phone: the Short opens in the panel, upright, the whole player in view', pg.locator('.mwrap.open .vid iframe').count() == 1 and box and box['width'] <= 271 and box['y'] + box['height'] <= pg.evaluate('document.querySelector(".mwrap").getBoundingClientRect().bottom'), box)
+    shot(pg, 'S19-video-phone', phone=True)
+    ctx.close()
+
     # S18 phones ---------------------------------------------------------------------------------------------------
     for w in [320, 390]:
         ctx, pg = open_page(b, 'scenario=racing', w=w, h=760 if w < 390 else 844, phone=True)
-        check(f'S18 phone {w}: the bar has the three buttons', pg.locator('.mact').count() == 3)
+        check(f'S18 phone {w}: the bar has the four buttons, every name whole', pg.locator('.mact').count() == 4 and pg.evaluate(CUT, '.mact span') == [], pg.evaluate(CUT, '.mact span'))
         pg.click('.mact >> nth=0'); pg.wait_for_timeout(900)
         box = pg.locator('.rt-boat .rt-ava').bounding_box()
         top = pg.evaluate("document.querySelector('.mwrap').getBoundingClientRect().top")

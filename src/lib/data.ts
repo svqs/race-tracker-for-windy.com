@@ -61,9 +61,35 @@ export function readRace(value: unknown): RaceInfo | null {
             const ph = str(rec(x)?.phase, 10);
             return { layer: str(rec(x)?.layer, 20) as LayerId, text: str(rec(x)?.text, 160), ...(ph === 'before' || ph === 'racing' ? { phase: ph as 'before' | 'racing' } : {}) };
         }).filter((x, i, all) => isLayer(x.layer) && x.text && all.findIndex(y => y.layer === x.layer && y.phase === x.phase) === i),
+        // videos (YouTube, watch / youtu.be / shorts / embed / live links): "videos": [{ "url", "title", "date" }], newest first
+        videos: readVideos(o.videos ?? (o.video ? [o.video] : [])),
         source: str(o.source, 400),
         track: track && !/^(javascript|data):/i.test(track) ? track : 'track.json',
     };
+}
+
+/** the 11-character id of a YouTube video, from any of its usual links (or the id itself) */
+export function youtubeId(v: unknown): string {
+    const s = str(v, 300).trim();
+    if (/^[\w-]{11}$/.test(s)) {return s;}
+    let u: URL;
+    try {
+        u = new URL(s);
+    } catch {
+        return '';
+    }
+    if (u.protocol !== 'https:' || !/(^|\.)(youtube\.com|youtube-nocookie\.com|youtu\.be)$/.test(u.hostname)) {return '';}
+    const id = u.hostname.endsWith('youtu.be') ? u.pathname.slice(1) : u.searchParams.get('v') || u.pathname.match(/^\/(?:shorts|embed|live|v)\/([^/?#]+)/)?.[1] || '';
+    return /^[\w-]{11}$/.test(id) ? id : '';
+}
+function readVideos(v: unknown): RaceInfo['videos'] {
+    return (Array.isArray(v) ? v : []).slice(0, 20).map(x => {
+        const r: Record<string, unknown> = rec(x) ?? { url: x };
+        const url = str(r.url, 300);
+        const id = youtubeId(url || r.id);
+        return { id, vertical: r.vertical === true || /\/shorts\//.test(url), title: str(r.title, 120), date: readTime(r.date) };
+    }).filter((x, i, a) => x.id && a.findIndex(y => y.id === x.id) === i)
+        .sort((a, b) => (b.date ?? 0) - (a.date ?? 0));
 }
 
 /** A photo: a file next to race.json, an https address, or (for the sandbox) a picture written into the file */

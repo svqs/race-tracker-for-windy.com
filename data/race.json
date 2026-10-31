@@ -63,5 +63,10 @@
             "phase": "before",
             "text": "Saint-Malo has some of the biggest tides in Europe. At the start they push the whole fleet around."
         }
-    ]
+    ],
+    "official": {
+        "name": "Route du Rhum official tracker",
+        "url": "https://carto.routedurhum.com/en/index.html",
+        "boat": "59"
+    }
 }

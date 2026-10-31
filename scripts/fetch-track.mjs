@@ -9,9 +9,12 @@
 //   variable TRACK_FEED_SPEED  YB only: the unit of the speeds in the feed, kn (default), kmh or ms
 //   secret   TRACK_FEED_PASSWORD  only if the feed has a password (Garmin MapShare: the MapShare password)
 //
+// race.json "official" (the organisers' tracker): positions newer than the official map shows wait (scripts/official.mjs).
+//
 // New positions are added to the ones already in the file; nothing is ever removed. When nothing new came in,
 // the file isn't touched (and the Action makes no commit).
-import { readFileSync, writeFileSync } from 'node:fs';
+import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { readOfficial, gate, compare } from './official.mjs';
 
 const FILE = process.argv[2] || 'data/track.json';
 const type = (process.env.TRACK_FEED_TYPE || '').trim().toLowerCase();
@@ -131,12 +134,32 @@ if (!readers[type]) throw new Error(`TRACK_FEED_TYPE "${type}" is not one of: ${
 // new ones only: after the last we have, not from the future (a tracker clock glitch would block everything after it),
 // with a real place, and each time once (feeds repeat positions)
 const seen = new Set();
-const fresh = (await readers[type]()).filter(p => {
+let fresh = (await readers[type]()).filter(p => {
     const t = Date.parse(p.t);
     if (!isFinite(t) || t <= since || t > Date.now() + 3600e3 || !place(p.lat, p.lon) || seen.has(t)) return false;
     seen.add(t);
     return true;
 });
+
+// the official tracker (race.json "official"): never show a position the organisers' map doesn't show yet. Newer ones
+// wait here (the feed sends them again next time). If the official map can't be read, nothing new is published and
+// the run fails, so someone notices. OFFICIAL_CHECK=off skips it (e.g. if the organisers' map is down for long).
+if (race.official?.url && (process.env.OFFICIAL_CHECK || '').toLowerCase() !== 'off') {
+    const official = await readOfficial(race.official, race.athlete?.name);
+    const g = gate(fresh, official);
+    fresh = g.kept;
+    const c = compare([...points, ...fresh], official);
+    const when = t => (t ? new Date(t).toISOString().replace(/:\d\d\.\d+Z$/, ' UTC').replace('T', ' ') : 'none');
+    const lines = [
+        `Official map: ${official.name} (boat ${official.id}), ${official.points.length} positions, newest ${when(c.lastOfficial)}.`,
+        `Showing up to ${when(g.until)}${g.held ? `; ${g.held} newer position(s) wait for the official map` : ''}.`,
+        c.compared ? `Compared ${c.compared} official position(s) with ours: at most ${c.worstNm} NM apart.` : 'Nothing to compare yet (no official position after the start).',
+    ];
+    if (c.worstNm > 2) lines.push(`WARNING: our track is ${c.worstNm} NM away from the official one somewhere: check the tracker.`);
+    console.log(lines.join('\n'));
+    if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Official tracker\n\n${lines.map(l => `- ${l}`).join('\n')}\n`);
+}
+
 if (!fresh.length) {
     console.log('No new positions.');
     process.exit(0);

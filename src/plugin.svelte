@@ -169,6 +169,40 @@
             {#if track?.updated}<small class="muted line">{ fill(W.trackUpdated, { time: dayTime(track.updated) }) }</small>{/if}
         {/if}
 
+    {:else if tab === 'video'}
+<!-- ================= VIDEO: the athlete's newest YouTube video (race.json "videos"), wide or upright (a Short) ================= -->
+        {#if video}
+            <div class="card vid">
+                <b class="h3">{ W.videoTitle }</b>
+                <div class="player" class:tall={ video.vertical }>
+                    {#key video.id}
+                        <iframe src={ `https://www.youtube-nocookie.com/embed/${video.id}?playsinline=1&rel=0` } title={ video.title || fill(W.videoUntitled, { short: race.athlete.short }) }
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
+                            referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
+                    {/key}
+                </div>
+                {#if video.title || video.date}<div class="vmeta">{#if video.title}<b>{ video.title }</b>{/if}{#if video.date}<small>{ dayTime(video.date) }</small>{/if}</div>{/if}
+            </div>
+            {#if race.videos.length > 1}
+                <div class="card vlist">
+                    <b>{ W.videoEarlier }</b>
+                    {#each race.videos as v (v.id)}
+                        {#if v.id !== video.id}
+                            <button class="vitem" aria-label={ fill(W.videoPlay, { title: v.title || fill(W.videoUntitled, { short: race.athlete.short }) }) } on:click={ () => { videoId = v.id; tick().then(scrollTop); } }>
+                                <img src={ `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg` } alt="" loading="lazy" referrerpolicy="no-referrer" />
+                                <span class="grow"><b>{ v.title || fill(W.videoUntitled, { short: race.athlete.short }) }</b>{#if v.date}<small>{ dayTime(v.date) }</small>{/if}</span>
+                            </button>
+                        {/if}
+                    {/each}
+                </div>
+            {/if}
+        {:else}
+            <div class="card vid">
+                <b class="h3">{ W.videoTitle }</b>
+                <div class="vwait"><Icon name="play" size={ 30 } /><p class="p">{ fill(W.videoNone, { short: race.athlete.short }) }</p></div>
+            </div>
+        {/if}
+
     {:else}
 <!-- ================= FOLLOW: their social media, others to follow (Windy.com), the race website. Nothing else (owner's decision) ================= -->
         <div class="card about">
@@ -237,8 +271,8 @@
     import type { Loaded } from './lib/source';
     import type { Settings as SettingsT, TrackPoint, Hour, RaceInfo, LayerId, Watch } from './lib/types';
 
-    type Tab = 'now' | 'track' | 'about';
-    const TAB_TITLE: Record<Tab, string> = { now: 'titleNow', track: 'titleTrack', about: 'titleAbout' };
+    type Tab = 'now' | 'track' | 'video' | 'about';
+    const TAB_TITLE: Record<Tab, string> = { now: 'titleNow', track: 'titleTrack', video: 'titleVideo', about: 'titleAbout' };
     const PAGE = 48;
     const REFRESH = 5 * 60e3;
 
@@ -352,7 +386,13 @@
     /* ---------- the track list ---------- */
     let shown = PAGE;
     let picked: TrackPoint | null = null;
-    $: rows = race && track ? thinned(track.points.filter(p => p.t >= race.start.time), 60).map(({ p, i }) => ({ p, ...motion(track.points, i), toFinish: distanceKm(p, race.finish) })) : [];
+    // the Video page: the newest video, or the one picked from the earlier ones
+    let videoId = '';
+    $: video = race?.videos.find(v => v.id === videoId) ?? race?.videos[0] ?? null;
+
+    // the race's positions only: from the start, like the official tracker (nothing earlier)
+    $: racePts = race && track ? track.points.filter(p => p.t >= race.start.time) : [];
+    $: rows = race ? thinned(racePts, 60).map(({ p, i }) => ({ p, ...motion(racePts, i), toFinish: distanceKm(p, race.finish) })) : [];
     $: shownGroups = groupByDay(rows.slice(0, shown));
     function groupByDay<T extends { p: TrackPoint }>(list: T[]): { key: string; label: string; rows: T[] }[] {
         const out: { key: string; label: string; rows: T[] }[] = [];
@@ -515,7 +555,8 @@
     }
     function view() {
         if (!race || !track || !st) {return null;}
-        const pts = track.points.filter(p => p.t >= race.start.time - 3600e3);
+        // the track from the start (like the official tracker); before it, only the boat where it is now
+        const pts = track.points.filter(p => p.t >= race.start.time);
         return {
             race, points: pts, picked: picked ? { p: picked, label: dayTime(picked.t) } : null,
             // before the start: where the boat is now (no speed, no track), grey once it's been 3 hours without a position
@@ -537,11 +578,12 @@
      * The three buttons (one row, desktop and phones). Each opens its page; Find also takes the map to the boat and
      * Whole race shows the race. Phones: the page rises in the panel and the map moves above it.
      */
-    const NAV: [Tab, 'boat' | 'route' | 'person'][] = [['now', 'boat'], ['track', 'route'], ['about', 'person']];
+    const NAV: [Tab, 'boat' | 'route' | 'play' | 'person'][] = [['now', 'boat'], ['track', 'route'], ['video', 'play'], ['about', 'person']];
     const navLabel = (k: Tab, w: Record<string, string>, ph: string, r: RaceInfo | null): string =>
         k === 'now' ? fill(w.actFind, { short: r?.athlete.short ?? '' })
             : k === 'track' ? (ph === 'before' ? w.actWholeBefore : w.actWhole)
-                : fill(w.actAbout, { short: r?.athlete.short ?? '' });
+                : k === 'video' ? w.actVideo
+                    : fill(w.actAbout, { short: r?.athlete.short ?? '' });
     function go(k: Tab) {
         if (!race) {return;}
         if (barMode) {

@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { execFile } from 'node:child_process';
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -245,6 +245,89 @@ await scenario('F21 YB\'s real answer (my.yb.tl/oceancall, 30 Oct 2026: short na
     assert.equal(r.code, 0, r.out);
     assert.deepEqual(trackOf(dir).points, [{ t: iso(at), lat: 48.64841, lon: -2.02253, sog: null, cog: null }]);
     assert.ok(await checkData(dir));
+});
+
+// ---- the official tracker (race.json "official"): never ahead of the organisers' map ----
+const OFFICIAL_BEFORE = path.join(root, 'scripts/fixtures/official-before-start.json'); // the real answer, 31 Oct 2026
+function officialFile(o) {
+    const f = path.join(mkdtempSync(path.join(tmpdir(), 'racetrack-official-')), 'official.json');
+    writeFileSync(f, JSON.stringify(o));
+    return f;
+}
+const withOfficial = dir => {
+    const r = JSON.parse(readFileSync(path.join(dir, 'data/race.json'), 'utf8'));
+    writeFileSync(path.join(dir, 'data/race.json'), JSON.stringify({ ...r, official: { url: `${BASE}/official.html`, boat: '59' } }));
+    return dir;
+};
+const offTrack = hours => ({ id: '59', name: 'Inland Roots, Ocean Soul', state: 'RUNNING', standby: false, start: START,
+    points: hours.map(h => ({ t: START + h * H, lat: 48.5 - h * 0.1, lon: -2.4 - h * 0.2 })) });
+
+await scenario('F22 official map: positions newer than its newest one wait, and come in once it shows them', async () => {
+    const dir = withOfficial(folder());
+    answer = yb([ybPos(1), ybPos(2), ybPos(3)]);
+    let r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: officialFile(offTrack([0, 1, 2])) });
+    assert.equal(r.code, 0, r.out);
+    assert.equal(trackOf(dir).points.length, 2, 'the third waits');
+    assert.match(r.out, /1 newer position\(s\) wait/);
+    r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: officialFile(offTrack([0, 1, 2, 3])) });
+    assert.equal(trackOf(dir).points.length, 3, 'now the official map has it too');
+    assert.ok(await checkData(dir));
+});
+await scenario('F23 official map before the start (its times still in the future, the real answer of 31 Oct): positions up to now come in', async () => {
+    const dir = withOfficial(folder());
+    const early = JSON.parse(readFileSync(path.join(dir, 'data/race.json'), 'utf8'));
+    writeFileSync(path.join(dir, 'data/race.json'), JSON.stringify({ ...early, start: { ...early.start, time: iso(NOW + 48 * H) } }));
+    answer = yb([{ at: NOW - 30 * 60e3, t: 48.64841, g: -2.02253 }]);
+    const r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: OFFICIAL_BEFORE });
+    assert.equal(r.code, 0, r.out);
+    assert.equal(trackOf(dir).points.length, 1);
+    assert.match(r.out, /Inland Roots, Ocean Soul \(boat 59\)/);
+});
+await scenario('F24 official map can\'t be read: the run fails and nothing new is published; OFFICIAL_CHECK=off skips it', async () => {
+    const dir = withOfficial(folder()); const before = raw(dir);
+    answer = yb([ybPos(1)]);
+    const r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: path.join(dir, 'missing.json') });
+    assert.notEqual(r.code, 0);
+    assert.equal(raw(dir), before);
+    const r2 = await run(dir, { ...YB_ENV, OFFICIAL_CHECK: 'off', OFFICIAL_FILE: path.join(dir, 'missing.json') });
+    assert.equal(r2.code, 0, r2.out);
+    assert.equal(trackOf(dir).points.length, 1);
+});
+await scenario('F25 compares our track with the official one and warns when they\'re far apart', async () => {
+    const dir = withOfficial(folder());
+    answer = yb([ybPos(1), ybPos(2)]);
+    let r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: officialFile(offTrack([1, 2])) });
+    assert.match(r.out, /Compared 2 official position\(s\) with ours: at most 0 NM apart/);
+    assert.doesNotMatch(r.out, /WARNING/);
+    const far = offTrack([1, 2]); far.points[1].lat += 0.5;
+    r = await run(withOfficial(folder()), { ...YB_ENV, OFFICIAL_FILE: officialFile(far) });
+    assert.match(r.out, /WARNING: our track is 30\.\d+ NM away/);
+});
+// the real reader: a headless Chrome opens a page with Geovoile's map objects (a stand-in on this computer)
+const chrome = process.env.OFFICIAL_CHROME || ['/usr/bin/google-chrome', ...(() => {
+    try { return readdirSync('/opt/pw-browsers').filter(d => d.startsWith('chromium-')).map(d => `/opt/pw-browsers/${d}/chrome-linux64/chrome`); } catch { return []; }
+})()].find(f => existsSync(f));
+await scenario('F26 the real reader in a headless Chrome: finds the boat by its number, or by the sailor\'s name', async () => {
+    const page = `<!doctype html><script>setTimeout(() => { window.tracker = { _eventState: 'RUNNING', stateIsStandby: false, timecodeOfficialStart: ${START / 1000},
+        _boats: [{ id: 7, name: 'Someone else', sailors: [{ fname: 'A', lname: 'B' }], track: { locations: [] } },
+                 { id: 59, name: 'Inland Roots, Ocean Soul', sailors: [{ fname: 'Milan', lname: 'Kolacek' }],
+                   track: { locations: [{ timecode: ${START / 1000 + 3600}, lat: 48.1, lng: -3.1 }, { timecode: ${START / 1000 + 7200}, lat: 47.9, lng: -3.6 }] } }] }; }, 300);</script>`;
+    const old = server.listeners('request')[0];
+    server.removeAllListeners('request');
+    server.on('request', (req, res) => { if (req.url.startsWith('/official.html')) { res.writeHead(200, { 'content-type': 'text/html' }); res.end(page); } else {old(req, res);} });
+    try {
+        const { readOfficial } = await import(path.join(root, 'scripts/official.mjs'));
+        process.env.OFFICIAL_CHROME = chrome || '';
+        delete process.env.OFFICIAL_FILE;
+        let o = await readOfficial({ url: `${BASE}/official.html`, boat: '59' }, 'Milan Koláček');
+        assert.equal(o.name, 'Inland Roots, Ocean Soul');
+        assert.deepEqual(o.points.map(p => p.t), [START + H, START + 2 * H]);
+        o = await readOfficial({ url: `${BASE}/official.html` }, 'Milan Koláček');
+        assert.equal(o.id, '59', 'found by name (with or without the accents)');
+        await assert.rejects(readOfficial({ url: `${BASE}/official.html`, boat: '12345' }, 'Nobody Here'), /boat not found/);
+    } finally {
+        server.removeAllListeners('request'); server.on('request', old);
+    }
 });
 
 server.close();

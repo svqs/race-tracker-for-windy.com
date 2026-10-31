@@ -203,6 +203,22 @@ await scenario('D26 before the start, a position in the harbour two days before:
     assert.equal(st.quiet, false, 'an hour ago: live');
     assert.equal(L.raceState(R, L.readTrack({ points: [harbour] }), START - 40 * H).quiet, true, '8 hours without a position: grey');
 });
+await scenario('D27 videos: YouTube links of every kind; Shorts upright; newest first; anything else dropped', async () => {
+    const ids = ['https://www.youtube.com/watch?v=aqz-KE-bpKQ', 'https://youtu.be/aqz-KE-bpKQ?t=3', 'https://youtube.com/shorts/jNQXAC9IVRw?feature=share',
+        'https://www.youtube.com/embed/aqz-KE-bpKQ', 'https://www.youtube.com/live/aqz-KE-bpKQ', 'https://m.youtube.com/watch?v=aqz-KE-bpKQ&list=x', 'aqz-KE-bpKQ'].map(L.youtubeId);
+    assert.deepEqual(ids, ['aqz-KE-bpKQ', 'aqz-KE-bpKQ', 'jNQXAC9IVRw', 'aqz-KE-bpKQ', 'aqz-KE-bpKQ', 'aqz-KE-bpKQ', 'aqz-KE-bpKQ']);
+    for (const bad of ['http://www.youtube.com/watch?v=aqz-KE-bpKQ', 'https://evil.example/watch?v=aqz-KE-bpKQ', 'https://youtube.com.evil.example/shorts/jNQXAC9IVRw', 'javascript:alert(1)', 'https://www.youtube.com/watch?v=short']) {
+        assert.equal(L.youtubeId(bad), '', bad);
+    }
+    const r = L.readRace({ ...race, videos: [
+        { url: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ', title: 'Day 3', date: iso(NOW - 5 * H) },
+        { url: 'https://youtube.com/shorts/jNQXAC9IVRw', title: 'Reefing', date: iso(NOW - 2 * H) },
+        { url: 'https://vimeo.com/123' }, { url: 'https://youtu.be/aqz-KE-bpKQ' },
+    ] });
+    assert.deepEqual(r.videos.map(v => [v.id, v.vertical]), [['jNQXAC9IVRw', true], ['aqz-KE-bpKQ', false]], 'newest first, Shorts upright, no repeats or other sites');
+    assert.equal(L.readRace({ ...race, video: { url: 'https://youtu.be/aqz-KE-bpKQ', vertical: true } }).videos[0].vertical, true, 'one "video", marked upright');
+    assert.deepEqual(L.readRace(race).videos, []);
+});
 await scenario('D24 finished / retired: no live speed, the race time', async () => {
     for (const status of ['finished', 'retired']) {
         const st = L.raceState({ ...R, status, endTime: START + 4 * H }, T, NOW);

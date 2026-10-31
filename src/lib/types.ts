@@ -45,6 +45,8 @@ export interface RaceInfo {
      * (empty: racetrack's own lines for the phase, see src/lib/layers.ts)
      */
     watch: Watch[];
+    /** videos from the athlete (YouTube), newest first; empty: the Video page says they're coming */
+    videos: Video[];
     /** where the positions come from, shown on About */
     source: string;
     /** the track file next to race.json (or a full https URL) */
@@ -53,6 +55,9 @@ export interface RaceInfo {
 
 /** One position from the tracker. Speed is stored in m/s like every speed here (the file has knots). */
 /** one of Windy's map layers racetrack can switch to (src/lib/layers.ts) */
+/** a YouTube video: its id (11 characters), upright (a Short, or "vertical": true) or wide, a title and when it was posted */
+export interface Video { id: string; vertical: boolean; title: string; date: number | null }
+
 export type LayerId = 'wind' | 'gust' | 'waves' | 'swell1' | 'pressure' | 'currents' | 'currentsTide' | 'rain';
 /** phase: only before the start, or only once racing (and after); none: always */
 export interface Watch { layer: LayerId; text: string; phase?: 'before' | 'racing' }

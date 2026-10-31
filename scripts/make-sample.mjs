@@ -3,7 +3,7 @@
 //   node scripts/make-sample.mjs            day 4, racing
 //   node scripts/make-sample.mjs quiet      no position for 5 hours
 //   node scripts/make-sample.mjs finished   across the line
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 
 const scenario = process.argv[2] || 'racing';
 const real = JSON.parse(readFileSync(new URL('../data/race.json', import.meta.url), 'utf8'));
@@ -43,4 +43,6 @@ race.athlete = { ...real.athlete, photo: real.athlete.photo ? `../${real.athlete
 mkdirSync(new URL('../data/sample/', import.meta.url), { recursive: true });
 writeFileSync(new URL('../data/sample/race.json', import.meta.url), JSON.stringify(race, null, 4) + '\n');
 writeFileSync(new URL('../data/sample/track.json', import.meta.url), `{\n    "updated": "${iso(now)}",\n    "points": [\n${points.map(p => '        ' + JSON.stringify(p)).join(',\n')}\n    ]\n}\n`);
+// the real videos (data/videos.json, from Milan's playlist) in the made-up race too, so the video card shows
+if (existsSync(new URL('../data/videos.json', import.meta.url))) {copyFileSync(new URL('../data/videos.json', import.meta.url), new URL('../data/sample/videos.json', import.meta.url));}
 console.log(`Sample race (${scenario}) in data/sample/: ${points.length} positions, start ${iso(start)}`);

@@ -95,20 +95,29 @@
             <div class="card vid">
                 <b>{ W.videoTitle }</b>
                 <div class="player" class:tall={ video.vertical }>
-                    {#key video.id}
-                        <iframe src={ `https://www.youtube-nocookie.com/embed/${video.id}?playsinline=1&rel=0` } title={ video.title || fill(W.videoUntitled, { short: race.athlete.short }) }
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
-                            referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe>
-                    {/key}
+                    {#if playing === video.id}
+                        <!-- YouTube's player, only once someone presses play (it starts straight away) -->
+                        {#key video.id}
+                            <iframe src={ `https://www.youtube-nocookie.com/embed/${video.id}?playsinline=1&rel=0&autoplay=1` } title={ video.title || fill(W.videoUntitled, { short: race.athlete.short }) }
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
+                                referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                        {/key}
+                    {:else}
+                        <!-- before that: the thumbnail and a play button (no YouTube title bar over the video) -->
+                        <button class="poster" aria-label={ fill(W.videoPlay, { title: video.title || fill(W.videoUntitled, { short: race.athlete.short }) }) } on:click={ () => (playing = video?.id ?? '') }>
+                            <img src={ `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg` } alt="" loading="lazy" referrerpolicy="no-referrer" on:error={ hideImg } />
+                            <span class="pbtn"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="#fff" /></svg></span>
+                        </button>
+                    {/if}
                 </div>
-                {#if video.title || video.date}<div class="vmeta">{#if video.title}<b>{ video.title }</b>{/if}{#if video.date}<small>{ dayTime(video.date) }</small>{/if}</div>{/if}
+                {#if video.title || video.date}<div class="vmeta">{#if video.title}<span class="vt">{ video.title }</span>{/if}{#if video.date}<small>{ dayTime(video.date) }</small>{/if}</div>{/if}
                 {#if earlier.length}
                     <!-- the three before it: a tap plays it here instead -->
                     <div class="vlist">
                         <small class="vh">{ W.videoEarlier }</small>
                         {#each earlier as v (v.id)}
-                            <button class="vitem" aria-label={ fill(W.videoPlay, { title: v.title || fill(W.videoUntitled, { short: race.athlete.short }) }) } on:click={ () => { videoId = v.id; } }>
-                                <img src={ `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg` } alt="" loading="lazy" referrerpolicy="no-referrer" />
+                            <button class="vitem" aria-label={ fill(W.videoPlay, { title: v.title || fill(W.videoUntitled, { short: race.athlete.short }) }) } on:click={ () => { videoId = v.id; playing = v.id; } }>
+                                <img src={ `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg` } alt="" loading="lazy" referrerpolicy="no-referrer" on:error={ hideImg } />
                                 <span class="grow"><b>{ v.title || fill(W.videoUntitled, { short: race.athlete.short }) }</b>{#if v.date}<small>{ dayTime(v.date) }</small>{/if}</span>
                             </button>
                         {/each}
@@ -267,6 +276,8 @@
     type Tab = 'now' | 'track' | 'about';
     const TAB_TITLE: Record<Tab, string> = { now: 'titleNow', track: 'titleTrack', about: 'titleAbout' };
     const PAGE = 48;
+    /** phones: how close Find Milan zooms in at most */
+    const PHONE_ZOOM = 7;
     const REFRESH = 5 * 60e3;
 
     const { title, version } = config;
@@ -381,6 +392,10 @@
     let picked: TrackPoint | null = null;
     // the video card on Find Milan's page: the newest video, or the one picked from the earlier ones
     let videoId = '';
+    /** the video whose YouTube player is on (pressed play); none when the page changes, so it never starts by itself */
+    let playing = '';
+    /** a thumbnail that doesn't load: nothing (not the browser's broken-picture mark) */
+    const hideImg = (e: Event) => { (e.currentTarget as HTMLElement).style.visibility = 'hidden'; };
     $: video = race?.videos.find(v => v.id === videoId) ?? race?.videos[0] ?? null;
     $: earlier = race && video ? race.videos.filter(v => v.id !== video?.id).slice(0, 3) : [];
 
@@ -415,6 +430,7 @@
     let tab: Tab = 'now';
     function setTab(k: Tab) {
         tab = k;
+        playing = '';
         tick().then(scrollTop);
         if (k === 'now') {autoForecast();}
     }
@@ -614,10 +630,13 @@
         const at = here || race.start;
         picked = null;
         raceLayer.pick(null);
-        const zoom = Math.max(currentZoom(), 6);
+        // phones: never closer than zoom 7 (owner, 31 Oct: closer, Windy switches to its outdoor map around the boat)
+        const zoom = isMobile ? Math.min(Math.max(currentZoom(), 5), PHONE_ZOOM) : Math.max(currentZoom(), 6);
         try {
             if (barMode && modalOpen) {
-                const d = 0.01;
+                // a box about 250 km across around the boat: by itself it lands around zoom 6–7 on a phone, so it
+                // stays out even if the map doesn't honour maxZoom (a tiny box would zoom right in)
+                const d = 1.1;
                 map.fitBounds([[at.lat - d, at.lon - d], [at.lat + d, at.lon + d]], { paddingTopLeft: [20, 60], paddingBottomRight: [20, coveredBelow()], maxZoom: zoom });
             } else {
                 centerMap({ lat: at.lat, lon: at.lon, zoom });

@@ -28,11 +28,13 @@ lists every test scenario and the checks to do by hand in real Windy.
   **Find Milan** → Now page + the map goes to the boat; **Whole race** → Track page + the map shows the race;
   **Follow Milan** → the Follow page: his social media (`athlete.links`), others to follow (`follow` in
   race.json: Windy.com) and the race website, nothing else (owner's decision, 29 Oct). Now: "Conditions right now" (three numbers: wind, gusts, waves, a small label above
-  each, nothing else), the athlete's newest YouTube video right under it, only once there is one (owner, 31 Oct;
+  each, nothing else), the athlete's newest YouTube video right under it, only once there is one (thumbnail and play button
+  first, YouTube's player only on play: its own title bar was too big; owner, 31 Oct;
   race.json `videos`, or found every 15 min by the update-track Action from race.json `youtube`: data/videos.json), "Things to look out for" (Windy layers, one line each, a tap switches Windy's map; lines from
   `src/lib/layers.ts` + copy.ts, changeable in race.json `watch`), the boat's numbers. Windy's own point forecast is
   open below the map (desktop), on its Wind tab; the map is on Wind whenever racetrack opens (owner, 30 Oct).
-  Phones: the same three buttons in the bar; each opens its page in the panel and moves the map above it.
+  Phones: the same three buttons in the bar; each opens its page in the panel and moves the map above it
+  (Find: never closer than zoom 7, or Windy switches to its outdoor map; owner, 31 Oct).
 - **Phases:** before the start (countdown, wind at the start, the course; the boat where it is now, no track), racing (live), quiet (no position for
   3 hours: the boat turns grey; the Now page only ever says when the last position came, no other notes), finished or retired (race time, sailed, average).
 - **Data:** two JSON files in this repository, read by everyone. See [docs/data.md](docs/data.md).

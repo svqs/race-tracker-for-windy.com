@@ -1,5 +1,6 @@
 name: update-track
-# Every 15 minutes: copy new positions from the tracker's feed into data/track.json.
+# Every 15 minutes: copy new positions from the tracker's feed into data/track.json, and new YouTube videos into
+# data/videos.json.
 # The feed is set in Settings → Secrets and variables → Actions (see docs/data.md). Without one, nothing happens.
 # With race.json "official", positions wait until the organisers' map shows them (scripts/official.mjs, headless Chrome).
 on:
@@ -31,14 +32,23 @@ jobs:
                   TRACK_FEED_SPEED: ${{ vars.TRACK_FEED_SPEED }}
                   OFFICIAL_CHECK: ${{ vars.OFFICIAL_CHECK }}
               run: node scripts/fetch-track.mjs data/track.json
+            # new videos on the YouTube playlist or channel in race.json ("youtube") → data/videos.json; runs (and gets
+            # committed) even when the positions step failed, e.g. while the official map can't be read
+            - name: Find new videos
+              if: ${{ !cancelled() }}
+              continue-on-error: true
+              run: node scripts/fetch-videos.mjs data/videos.json
             - name: Check the files (a broken file is never committed)
+              id: check
+              if: ${{ !cancelled() }}
               run: node scripts/check-data.mjs data
             - name: Commit when something changed
+              if: ${{ !cancelled() && steps.check.outcome == 'success' }}
               run: |
                   if git diff --quiet -- data; then echo "Nothing new."; exit 0; fi
                   git config user.name "racetrack bot"
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
                   git add data
-                  git commit -m "track: new positions"
+                  git commit -m "track: new positions or videos"
                   git pull --rebase --quiet
                   git push

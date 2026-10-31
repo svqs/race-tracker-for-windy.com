@@ -52,7 +52,8 @@ await scenario('D1 both files fine: race and 4 positions, and a copy kept for ne
     const l = await L.loadRace(URL_);
     assert.equal(l.race.athlete.name, 'Milan Koláček');
     assert.equal(l.track.points.length, 4);
-    assert.equal(asked[1].url.split('?')[0], URL_.replace('race.json', 'track.json'), 'track.json is read next to race.json');
+    assert.ok(asked.some(a => a.url.split('?')[0] === URL_.replace('race.json', 'track.json')), 'track.json is read next to race.json');
+    assert.ok(asked.some(a => a.url.split('?')[0] === URL_.replace('race.json', 'videos.json')), 'and videos.json (optional; here not there)');
     assert.ok(/[?&]v=\d+/.test(asked[0].url), 'GitHub cache-busting parameter');
     assert.equal(asked[0].opts.credentials, 'omit', 'no cookies to GitHub');
     assert.ok(L.lastLoaded(), 'the last copy is kept');
@@ -218,6 +219,14 @@ await scenario('D27 videos: YouTube links of every kind; Shorts upright; newest 
     assert.deepEqual(r.videos.map(v => [v.id, v.vertical]), [['jNQXAC9IVRw', true], ['aqz-KE-bpKQ', false]], 'newest first, Shorts upright, no repeats or other sites');
     assert.equal(L.readRace({ ...race, video: { url: 'https://youtu.be/aqz-KE-bpKQ', vertical: true } }).videos[0].vertical, true, 'one "video", marked upright');
     assert.deepEqual(L.readRace(race).videos, []);
+});
+await scenario('D28 videos found by the Action (videos.json) join race.json\'s own: newest first, race.json wins for the same video', async () => {
+    const r = L.readRace({ ...race, videos: [{ url: 'https://youtu.be/aqz-KE-bpKQ', title: 'My own title', date: iso(NOW - 5 * H) }] });
+    const both = L.withVideos(r, { videos: [{ url: 'https://www.youtube.com/watch?v=aqz-KE-bpKQ', title: 'From YouTube', date: iso(NOW - 5 * H) },
+        { url: 'https://www.youtube.com/shorts/jNQXAC9IVRw', title: 'Newer', date: iso(NOW - H), vertical: true }] });
+    assert.deepEqual(both.videos.map(v => [v.id, v.title, v.vertical]), [['jNQXAC9IVRw', 'Newer', true], ['aqz-KE-bpKQ', 'My own title', false]]);
+    assert.equal(L.withVideos(r, null), r, 'no file: race.json\'s only');
+    assert.equal(L.withVideos(r, '<html>404</html>'), r, 'nonsense: race.json\'s only');
 });
 await scenario('D24 finished / retired: no live speed, the race time', async () => {
     for (const status of ['finished', 'retired']) {

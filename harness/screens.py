@@ -39,8 +39,8 @@ with sync_playwright() as p:
         pg.goto(f'{BASE}?scenario={scenario}&embed')
         pg.wait_for_timeout(1600)
         pg.screenshot(path=str(OUT / f'desktop-{scenario}-now.png'))
-        # the four buttons: 0 Find (Now), 1 Whole race (Track), 2 Video, 3 Follow (About)
-        for i, tab in [(1, 'track'), (2, 'video'), (3, 'about')]:
+        # the three buttons: 0 Find (Now), 1 Whole race (Track), 2 Follow (About)
+        for i, tab in [(1, 'track'), (2, 'about')]:
             pg.click(f'.act >> nth={i}')
             pg.wait_for_timeout(300)
             pg.screenshot(path=str(OUT / f'desktop-{scenario}-{tab}.png'))
@@ -64,12 +64,12 @@ with sync_playwright() as p:
             pg.wait_for_timeout(1600)
             pg.screenshot(path=str(OUT / f'phone{w}-{scenario}-bar.png'))
             overflow(pg, name + '/bar')
-            for i, tab in [(0, 'now'), (1, 'track'), (2, 'video'), (3, 'about')]:
+            for i, tab in [(0, 'now'), (1, 'track'), (2, 'about')]:
                 pg.click(f'.mact >> nth={i}')
                 pg.wait_for_timeout(450)
                 pg.screenshot(path=str(OUT / f'phone{w}-{scenario}-{tab}.png'))
                 overflow(pg, f'{name}/{tab}')
-            pg.click('.mact >> nth=3')  # the same button again closes the panel
+            pg.click('.mact >> nth=2')  # the same button again closes the panel
             pg.wait_for_timeout(300)
             pg.click('.mact >> nth=0')  # Find: the Now page, the boat above it
             pg.wait_for_timeout(500)

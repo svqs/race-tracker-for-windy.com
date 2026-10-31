@@ -38,15 +38,15 @@
     .body > :global(*) { flex-shrink: 0; }
 
     /* ---------- phones: a compact bar in Windy's pane under the timeline (explicit height: Windy's pane needs one) ---------- */
-    .racetrack.m.bar { height: 112px; max-height: none; min-height: 112px; padding: 0; gap: 0; display: block; overflow: visible; position: relative; }
+    .racetrack.m.bar { height: 104px; max-height: none; min-height: 104px; padding: 0; gap: 0; display: block; overflow: visible; position: relative; }
     .mbar { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 9px; }
     .mrow { display: flex; align-items: center; gap: 10px; min-height: 30px; .wordmark { font-size: 20px; } }
-    .macts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
-    .mact { height: 48px; padding: 4px 3px; border-radius: 14px; flex-direction: column; line-height: 1.15; text-align: center; border: 1px solid var(--rt-actLine, #5a5a5a); background: var(--rt-actBg, #3c3c3c); color: var(--rt-actText, #f8f8f8) !important; display: flex; align-items: center; justify-content: center; gap: 3px; font-size: 11.5px !important; font-weight: 600;
+    .macts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+    .mact { height: 40px; padding: 0 6px; border-radius: 999px; border: 1px solid var(--rt-actLine, #5a5a5a); background: var(--rt-actBg, #3c3c3c); color: var(--rt-actText, #f8f8f8) !important; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12.5px !important; font-weight: 600;
         span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } &:disabled { opacity: 0.6; }
         &.on { background: var(--rt-highlight, #d49500); border-color: var(--rt-highlight, #d49500); color: #fff !important; } }
-    /* four buttons (owner, 31 Oct: a Video page), each the icon above its name so the names fit; very narrow phones: smaller */
-    @media (max-width: 359px) { .macts { gap: 4px; } .mact { font-size: 10.5px !important; padding: 4px 1px; } }
+    /* very narrow phones (320 px): the words fit without the icons */
+    @media (max-width: 359px) { .mact { padding: 0 4px; :global(svg) { display: none; } } }
     /* the panel rises from the bar over the timeline and the map; it scrolls inside */
     .mwrap.on { display: flex; flex-direction: column; position: absolute; left: 8px; right: 8px; bottom: calc(100% + 8px); z-index: 30;
         /* the top stays clear of Windy's own bar (it shows up when you touch the map) */
@@ -91,10 +91,10 @@
 
     /* the three actions: one row of rounded buttons, icon and word side by side, all the same grey (owner's pick) */
     .actions { display: flex; gap: 6px; }
-    .act { flex: 1 1 0; min-width: 0; height: 54px; padding: 6px 2px; border-radius: 14px; border: 1px solid var(--rt-actLine, #5a5a5a); background: var(--rt-actBg, #3c3c3c); color: var(--rt-actText, #f8f8f8) !important;
-        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
-        :global(svg) { color: var(--rt-actIcon, #f8f8f8); width: 18px; height: 18px; }
-        b { font-size: 12px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .act { flex: 1 1 auto; min-width: 0; height: 40px; padding: 0 10px; border-radius: 999px; border: 1px solid var(--rt-actLine, #5a5a5a); background: var(--rt-actBg, #3c3c3c); color: var(--rt-actText, #f8f8f8) !important;
+        display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 5px;
+        :global(svg) { color: var(--rt-actIcon, #f8f8f8); width: 16px; height: 16px; }
+        b { font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         &:hover { border-color: var(--rt-uHoverLine, #777777); background: var(--rt-uHoverBg, #424242); }
         /* selected: Windy's orange for UI elements on dark content */
         &.on { background: var(--rt-highlight, #d49500); border-color: var(--rt-highlight, #d49500); color: #fff !important; :global(svg) { color: #fff; } } }
@@ -153,7 +153,8 @@
     .card.boatcard.photo { background: linear-gradient(rgba(24, 24, 24, 0.62), rgba(24, 24, 24, 0.8)), var(--rt-img) center / cover no-repeat, @card; border-color: rgba(255, 255, 255, 0.08);
         :global(.kv) > :global(span), :global(.kv) > :global(b) { border-top-color: rgba(255, 255, 255, 0.14); }
         :global(.kv) > :global(span) { color: rgba(240, 240, 240, 0.72); } }
-    /* Video: YouTube's own player, wide (16:9) or upright for a Short (9:16, not wider than a phone screen) */
+    /* Video (Find Milan's page, under the conditions, only when there is one): YouTube's own player, wide (16:9) or
+     * upright for a Short (9:16, fitted to the panel's height) */
     .vid { gap: 12px; }
     .player { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000;
         &.tall { aspect-ratio: 9 / 16; width: auto; height: min(480px, 62vh); max-width: 100%; align-self: center; }
@@ -161,12 +162,10 @@
     /* phones: the upright player fits the panel's height (the panel is the screen minus Windy's bar and the map above) */
     .racetrack.m .player.tall { height: max(240px, calc(100dvh - 480px)); }
     .vmeta { display: flex; flex-direction: column; gap: 2px; b { font-size: 14px; } small { color: var(--rt-uSub, @sub); } }
-    .vwait { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 8px 8px; text-align: center; color: var(--rt-uSub, @sub);
-        p { margin: 0; line-height: 1.45; max-width: 290px; } }
-    .vlist { gap: 4px; padding-bottom: 8px; }
+    .vlist { display: flex; flex-direction: column; margin-top: 2px; .vh { color: var(--rt-uSub, @sub); font-size: 12px; padding-bottom: 2px; } }
     .vitem { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 6px; margin: 0 -6px; box-sizing: content-box; border: 0; border-top: 1px solid @line;
         background: transparent; text-align: left; color: @text !important; cursor: pointer;
-        &:first-of-type { border-top: 0; } &:hover { background: rgba(255, 255, 255, 0.04); }
+        &:hover { background: rgba(255, 255, 255, 0.04); }
         img { width: 96px; height: 54px; object-fit: cover; border-radius: 8px; flex: none; background: #000; }
         .grow { display: flex; flex-direction: column; gap: 2px; min-width: 0; b { font-size: 13.5px; } small { color: var(--rt-uSub, @sub); } } }
     /* Things to look out for: Windy layers, one line each; a tap switches the map (the one on the map in Windy orange) */

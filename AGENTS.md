@@ -23,16 +23,16 @@ lists every test scenario and the checks to do by hand in real Windy.
   `racetrack` (`windy-plugin-racetrack`, `/racetrack`); the repository is `svqs/Race-Tracker-for-Windy.com`. The font file isn't in the plugin
   yet: `node scripts/embed-logo-font.mjs <bariol regular .woff2>` adds it; until then it shows where Bariol is installed.
 - **Panel:** who and which race, three numbers (speed, to finish, time at sea), all in the top bar: full width, flush to the panel's top and corners,
-  staying put while the panel scrolls (desktop); then ONE row of four buttons (icon above the name; owner, 31 Oct: a Video page) that
+  staying put while the panel scrolls (desktop); then ONE row of three buttons that
   are also the pages (owner's decision, 29 Oct: no separate tabs, no Forecast button):
-  **Find Milan** → Now page + the map goes to the boat; **Whole race** → Track page + the map shows the race; **Video** → the athlete's newest YouTube video (race.json
-  `videos`; Shorts upright), or a note that videos are coming;
+  **Find Milan** → Now page + the map goes to the boat; **Whole race** → Track page + the map shows the race;
   **Follow Milan** → the Follow page: his social media (`athlete.links`), others to follow (`follow` in
   race.json: Windy.com) and the race website, nothing else (owner's decision, 29 Oct). Now: "Conditions right now" (three numbers: wind, gusts, waves, a small label above
-  each, nothing else), "Things to look out for" (Windy layers, one line each, a tap switches Windy's map; lines from
+  each, nothing else), the athlete's newest YouTube video right under it, only once there is one (owner, 31 Oct;
+  race.json `videos`, or found every 15 min by the update-track Action from race.json `youtube`: data/videos.json), "Things to look out for" (Windy layers, one line each, a tap switches Windy's map; lines from
   `src/lib/layers.ts` + copy.ts, changeable in race.json `watch`), the boat's numbers. Windy's own point forecast is
   open below the map (desktop), on its Wind tab; the map is on Wind whenever racetrack opens (owner, 30 Oct).
-  Phones: the same four buttons in the bar; each opens its page in the panel and moves the map above it.
+  Phones: the same three buttons in the bar; each opens its page in the panel and moves the map above it.
 - **Phases:** before the start (countdown, wind at the start, the course; the boat where it is now, no track), racing (live), quiet (no position for
   3 hours: the boat turns grey; the Now page only ever says when the last position came, no other notes), finished or retired (race time, sailed, average).
 - **Data:** two JSON files in this repository, read by everyone. See [docs/data.md](docs/data.md).
@@ -71,7 +71,7 @@ lists every test scenario and the checks to do by hand in real Windy.
 ## Where things are
 
 ```
-src/plugin.svelte        the whole app: phone bar + panel, top card, the four buttons and pages, map, Windy's forecast, data refresh
+src/plugin.svelte        the whole app: phone bar + panel, top card, the three buttons and pages, map, Windy's forecast, data refresh
 src/ui/                  Stats (photo, name, flag + three numbers), Conditions (three numbers on Now), icons
 src/lib/athlete.ts       the round photo (initials underneath) and the flag
 src/ui/application.less  the panel's styles (--rt-* variables from theme.ts)
@@ -81,7 +81,8 @@ src/lib/race.ts          phase, speed, course, distance to the finish, time at s
 src/lib/forecast.ts      Windy's forecast where the boat is (ECMWF wind, ECMWF/GFS waves)
 src/lib/map/             the race on the map
 data/                    race.json and track.json (the live data)
-scripts/fetch-track.mjs  the tracker feed → track.json (run by .github/workflows/update-track.yml)
+scripts/fetch-track.mjs  the tracker feed → track.json, never ahead of the official map (scripts/official.mjs)
+scripts/fetch-videos.mjs YouTube playlist/channel → videos.json (both run by .github/workflows/update-track.yml)
 scripts/check-data.mjs   checks the data files (Action, validate workflow, npm run test:data)
 harness/                 fake Windy (mock-windy.js), sandbox page, screenshots, browser scenarios (test-scenarios.py)
 scripts/test-*.mjs       unit checks, data scenarios (test-fetch), feed scenarios (test-feed)

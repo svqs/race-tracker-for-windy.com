@@ -18,10 +18,10 @@ export const COPY_GROUPS: CopyGroup[] = [
         ['wordmark', 'Race Tracker', 'The logo (Bariol Regular)'],
         ['tagLive', 'live'], ['tagSoon', 'soon'], ['tagFinished', 'finished'], ['tagRetired', 'retired'],
         ['tabNow', 'Now'], ['tabTrack', 'Track'], ['tabAbout', 'About'],
-        ['titleNow', 'Right now', 'Phone: title of the Now panel'], ['titleTrack', 'The track', 'Phone: title of the Track panel'], ['titleAbout', 'Follow {short}', 'Phone: title of the Follow page'], ['titleVideo', 'Video from {short}', 'Phone: title of the Video page'],
+        ['titleNow', 'Right now', 'Phone: title of the Now panel'], ['titleTrack', 'The track', 'Phone: title of the Track panel'], ['titleAbout', 'Follow {short}', 'Phone: title of the Follow page'],
         ['actFind', 'Find {short}', 'Button: the Now page, and the map goes to the boat'], ['actFindSub', 'on the map'],
         ['actWhole', 'Whole race'], ['actWholeSub', 'track so far'], ['actWholeBefore', 'The course'], ['actWholeBeforeSub', 'start to finish'],
-        ['actVideo', 'Video', 'Button: the Video page (YouTube videos from the athlete)'], ['actAbout', 'Follow {short}', 'Button: their social media, Windy’s, and the race website'], ['actForecast', 'Forecast'], ['actForecastSub', 'Windy, right there'],
+        ['actAbout', 'Follow {short}', 'Button: their social media, Windy’s, and the race website'], ['actForecast', 'Forecast'], ['actForecastSub', 'Windy, right there'],
         ['close', 'Close'], ['back', 'Back'], ['windyMenu', 'Windy’s menu'],
     ] },
     { id: 'head', title: 'The top card', items: [
@@ -69,9 +69,8 @@ export const COPY_GROUPS: CopyGroup[] = [
         ['sailAngle', 'Wind {angle}° off his bow'],
         ['waitTitle', 'Waiting for the start'], ['waitText', 'The track shows up here and on the map once {short} is racing.'],
     ] },
-    { id: 'video', title: 'Video', items: [
-        ['videoTitle', 'From the boat', 'Heading of the Video page'],
-        ['videoNone', '{short} will send videos from the boat about what he’s facing out there. The newest shows up here.'],
+    { id: 'video', title: 'Video (Find Milan’s page, only when there is one)', items: [
+        ['videoTitle', 'From the boat', 'Heading of the video card'],
         ['videoEarlier', 'Earlier videos'],
         ['videoPlay', 'Play “{title}”'],
         ['videoUntitled', 'Video from {short}'],

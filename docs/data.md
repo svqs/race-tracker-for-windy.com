@@ -64,10 +64,15 @@ the boat sent it.
   `currentsTide`, `rain`. `phase` (optional): `before` (only before the start) or `racing` (from the start on). `{short}`
   in a line becomes the athlete's short name. Lines up to 160 characters. Write a new one any time during the race,
   e.g. `{ "layer": "pressure", "phase": "racing", "text": "A big low crosses the fleet on Tuesday." }`.
-- `videos` fills the Video page: YouTube links, newest first, e.g.
-  `"videos": [{ "url": "https://youtube.com/shorts/…", "title": "Reefing for the night", "date": "2026-11-03T18:00:00Z" }]`.
-  Any YouTube link works (watch, youtu.be, shorts, live). Shorts play upright; for an upright video posted as a normal
-  one, add `"vertical": true`. The newest plays; the others are listed under it. Without any, the page says videos are coming.
+- **Videos** show on Find Milan's page, under "Conditions right now", once there is one (none: no card). Two ways,
+  both without publishing the plugin:
+  - automatic: `"youtube": { "playlist": "PL…" }` (or `{ "channel": "UC…" }` / `{ "channel": "@handle" }`). The
+    update-track Action reads YouTube's public feed every 15 minutes and writes new videos to `data/videos.json`
+    (only videos from a week before the start on; `"since"` changes that). A playlist is best: only what you add to
+    it shows. Shorts are found and play upright.
+  - by hand: `"videos": [{ "url": "https://youtube.com/shorts/…", "title": "Reefing for the night", "date": "2026-11-03T18:00:00Z" }]`.
+    Any YouTube link works (watch, youtu.be, shorts, live); `"vertical": true` for an upright video posted as a normal one.
+  The newest plays; up to three earlier ones are listed under it.
 - `official` is the organisers' tracker (`url`, and `boat`: its number there, Milan's is 59). The update-track Action
   reads it and never publishes a position the official map doesn't show yet (`scripts/official.mjs`); its log compares
   our track with theirs. If the official map is down for long, set the variable `OFFICIAL_CHECK` = `off`.

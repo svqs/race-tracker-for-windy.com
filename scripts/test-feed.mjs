@@ -330,6 +330,74 @@ await scenario('F26 the real reader in a headless Chrome: finds the boat by its 
     }
 });
 
+// ---- YouTube: new videos from a playlist or channel → data/videos.json (scripts/fetch-videos.mjs) ----
+// a stand-in YouTube: the feed (as YouTube writes it), a channel page for @handles, and /shorts/<id> (200 for a Short)
+let ytFeed = '', ytStatus = 200; const shorts = new Set(); const ytAsked = [];
+const ytEntry = (id, title, date, short = false) => `<entry><id>yt:video:${id}</id><yt:videoId>${id}</yt:videoId><yt:channelId>UCabcdefghijklmnopqrstuv</yt:channelId><title>${title}</title><link rel="alternate" href="https://www.youtube.com/${short ? `shorts/${id}` : `watch?v=${id}`}"/><author><name>Milan</name></author><published>${date}</published><updated>${date}</updated><media:group><media:title>${title}</media:title></media:group></entry>`;
+const ytXml = entries => `<?xml version="1.0" encoding="UTF-8"?><feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom"><title>Milan</title>${entries.join('')}</feed>`;
+function youtube(req, res) {
+    ytAsked.push(req.url);
+    if (req.url.startsWith('/yt/feeds/videos.xml')) { res.writeHead(ytStatus, { 'content-type': 'application/atom+xml' }); res.end(ytStatus === 200 ? ytFeed : 'nope'); return true; }
+    if (req.url.startsWith('/yt/@')) { res.writeHead(200, { 'content-type': 'text/html' }); res.end('<html><link rel="canonical" href="https://www.youtube.com/channel/UCabcdefghijklmnopqrstuv"></html>'); return true; }
+    if (req.url.startsWith('/yt/shorts/')) { const id = req.url.split('/').pop(); if (shorts.has(id)) { res.writeHead(200); } else { res.writeHead(303, { location: `/watch?v=${id}` }); } res.end(); return true; }
+    return false;
+}
+{
+    const old = server.listeners('request')[0];
+    server.removeAllListeners('request');
+    server.on('request', (req, res) => { if (!youtube(req, res)) {old(req, res);} });
+}
+const YT_ENV = { YOUTUBE_BASE: `${BASE}/yt` };
+const runVideos = (dir, env = {}) => run(dir, { ...YT_ENV, ...env }, 'scripts/fetch-videos.mjs', ['data/videos.json']);
+const withYoutube = (dir, youtube) => {
+    const r = JSON.parse(readFileSync(path.join(dir, 'data/race.json'), 'utf8'));
+    writeFileSync(path.join(dir, 'data/race.json'), JSON.stringify({ ...r, youtube }));
+    return dir;
+};
+const vids = dir => JSON.parse(readFileSync(path.join(dir, 'data/videos.json'), 'utf8')).videos;
+
+await scenario('F27 no YouTube playlist or channel in race.json: nothing happens', async () => {
+    const dir = folder();
+    const r = await runVideos(dir);
+    assert.equal(r.code, 0, r.out);
+    assert.ok(!existsSync(path.join(dir, 'data/videos.json')));
+});
+await scenario('F28 a playlist: new videos come in newest first, Shorts upright, nothing from long before the start; the same again changes nothing', async () => {
+    const dir = withYoutube(folder(), { playlist: 'PLmilan123' });
+    ytFeed = ytXml([ytEntry('aqz-KE-bpKQ', 'Day 3: the first big low', iso(NOW - 5 * H)), ytEntry('jNQXAC9IVRw', 'Reefing &amp; a cup of tea', iso(NOW - 2 * H), true),
+        ytEntry('dQw4w9WgXcQ', 'Last year in the boatyard', iso(START - 40 * 24 * H))]);
+    let r = await runVideos(dir);
+    assert.equal(r.code, 0, r.out);
+    assert.ok(ytAsked.some(u => u.includes('playlist_id=PLmilan123')));
+    assert.deepEqual(vids(dir).map(v => [v.url, v.vertical, v.title]), [['https://www.youtube.com/shorts/jNQXAC9IVRw', true, 'Reefing & a cup of tea'], ['https://www.youtube.com/watch?v=aqz-KE-bpKQ', false, 'Day 3: the first big low']]);
+    assert.ok(await checkData(dir), 'the data check accepts it');
+    const before = readFileSync(path.join(dir, 'data/videos.json'), 'utf8');
+    r = await runVideos(dir);
+    assert.match(r.out, /No new videos/);
+    assert.equal(readFileSync(path.join(dir, 'data/videos.json'), 'utf8'), before, 'untouched: no commit');
+});
+await scenario('F29 a channel by its @handle; a Short the feed links as a normal video is found by asking youtube.com/shorts/', async () => {
+    const dir = withYoutube(folder(), { channel: '@milankolacek' });
+    ytFeed = ytXml([ytEntry('jNQXAC9IVRw', 'Upright, posted as a normal video', iso(NOW - H))]);
+    shorts.add('jNQXAC9IVRw');
+    const r = await runVideos(dir);
+    shorts.clear();
+    assert.equal(r.code, 0, r.out);
+    assert.ok(ytAsked.some(u => u.includes('channel_id=UCabcdefghijklmnopqrstuv')), 'the channel id from its page');
+    assert.equal(vids(dir)[0].vertical, true);
+});
+await scenario('F30 YouTube down or the playlist gone: the step fails, videos.json untouched (positions still go out)', async () => {
+    const dir = withYoutube(folder(), { playlist: 'PLmilan123' });
+    ytFeed = ytXml([ytEntry('aqz-KE-bpKQ', 'One', iso(NOW - H))]);
+    await runVideos(dir);
+    const before = readFileSync(path.join(dir, 'data/videos.json'), 'utf8');
+    ytStatus = 404;
+    const r = await runVideos(dir);
+    ytStatus = 200;
+    assert.notEqual(r.code, 0);
+    assert.equal(readFileSync(path.join(dir, 'data/videos.json'), 'utf8'), before);
+});
+
 server.close();
 const bad = results.filter(r => r[0] === '✗');
 for (const r of results) {console.log(r.join('  '));}

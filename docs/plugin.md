@@ -67,14 +67,13 @@ time. `npm start` serves `https://localhost:9999/plugin.js` with a sample race f
    scrolls): ‹ back to Windy's menu, the Race Tracker logo, a LIVE / SOON /
    FINISHED tag; the athlete's photo, name, flag, boat and race; three numbers that depend on the phase (before:
    starts in, distance, start date · racing: speed, to finish, at sea · after: race time, sailed, average).
-2. **One row of four buttons** (the icon above the name), which are also the pages:
+2. **One row of three buttons**, which are also the pages:
    - **Find Milan** → the Now page, and the map goes to the boat.
    - **Whole race** (before the start: **The course**) → the Track page, and the map shows the whole race.
-   - **Video** → Milan's newest YouTube video (race.json `videos`; Shorts play upright), earlier ones under it; until
-     there is one, a note that videos are coming.
    - **Follow Milan** → the Follow page.
 3. **Now page:** "Last position … ago" (nothing else, even when the tracker is quiet), "Conditions right now" (wind,
-   gusts, waves: three numbers with small labels), "Back to Milan" only when Windy's forecast isn't at the boat,
+   gusts, waves: three numbers with small labels), Milan's newest YouTube video (only once there is one; Shorts
+   upright; up to three earlier ones under it), "Back to Milan" only when Windy's forecast isn't at the boat,
    "Things to look out for" (four Windy layers with one line each; a tap switches Windy's map, the one on the map is
    marked "On the map"), "The boat" (speed, course, average, sailed, to finish, position).
    Windy's own point forecast is open at the boat **below the map**, on its Wind tab, and the map is on Wind
@@ -82,7 +81,7 @@ time. `npm start` serves `https://localhost:9999/plugin.js` with a sample race f
 4. **Track page:** positions newest first, about one an hour, grouped by day; tapping one shows it on the map.
 5. **Follow page:** Follow Milan (Instagram, Facebook), Follow Windy.com (Instagram, Facebook), the race website.
 
-**Phones:** a compact bar under Windy's timeline (logo and the same four buttons). Each button opens its page in a
+**Phones:** a compact bar under Windy's timeline (logo and the same three buttons). Each button opens its page in a
 panel that rises over the map and moves the map so the boat (or the race) sits above the panel; the same button closes
 it. If a phone cuts the panel off, it falls back to Windy's classic half-screen pane.
 
@@ -140,7 +139,8 @@ Sophia (the owner) is a designer at Windy. From her reviews, 27–29 Oct 2026:
 - No card on the map. Tapping the boat opens Windy's point forecast.
 - No look-alike forecast table; Windy's real forecast below the map (30 Oct: no longer in the panel), opened on its Wind tab.
 - The map on Wind whenever Race Tracker opens; "Things to look out for" (Wind, Waves, Pressure, Tidal/Ocean currents) instead of the forecast in the panel.
-- One row of buttons (Find Milan, Whole race, Video, Follow Milan) instead of actions + tabs; no Forecast button.
+- One row of three buttons (Find Milan, Whole race, Follow Milan) instead of actions + tabs; no Forecast button.
+- Videos: a card under the conditions on Find Milan's page, only once there is one (no Video button; 31 Oct).
 - Never ahead of the organisers' official tracker: nothing earlier than the start, nothing newer than the official map (31 Oct).
 - "Conditions right now": three numbers only (wind, gusts, waves), small labels, nothing else.
 - The Follow page: Milan's and Windy's Instagram and Facebook and the race website, nothing else.

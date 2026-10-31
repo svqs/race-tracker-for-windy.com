@@ -54,6 +54,7 @@ The plugin fetches two files from GitHub every 5 minutes. These scenarios feed i
 | D24 | Finished / retired | No live speed; the race time |
 | D26 | Before the start, a position in the harbour | The boat shows there; no track, nothing sailed; grey after 3 h without a position |
 | D27 | `videos` | Every kind of YouTube link read, others dropped; Shorts upright; newest first |
+| D28 | `videos.json` (found by the Action) with race.json's videos | One list, newest first; race.json wins for the same video; a missing or broken file changes nothing |
 | D25 | `watch` (things to look out for) | Only Windy layers racetrack knows, with a line; a line replaces racetrack's for that layer, a new layer goes first, at most four; `phase` before/racing; the defaults otherwise |
 
 ## F · Feed (scripts/test-feed.mjs)
@@ -88,6 +89,10 @@ something changed and the check passed. Each scenario runs the real script in a 
 | F24 | Official map can't be read | The run fails, nothing new published; `OFFICIAL_CHECK=off` skips it |
 | F25 | Our track vs the official one | Compared in the log; a warning when more than 2 NM apart |
 | F26 | The real reader (headless Chrome, a stand-in of Geovoile's map) | Finds the boat by number or by the sailor's name (with or without accents) |
+| F27 | No YouTube playlist or channel | Nothing happens |
+| F28 | A playlist | New videos newest first, Shorts upright, titles unescaped, nothing from long before the start; the same again: file untouched |
+| F29 | A channel by its @handle | The channel id from its page; a Short linked as a normal video found via youtube.com/shorts/ |
+| F30 | YouTube down / playlist gone | The video step fails, videos.json untouched; positions still go out |
 | F21 | YB's real answer (my.yb.tl/oceancall, 30 Oct: `t` latitude, `g` longitude, no speed) | Read exactly |
 
 ## S · Browser (harness/test-scenarios.py)
@@ -98,7 +103,7 @@ changes the photo behind the panel, `&embed` hides the pills.
 
 | # | Scenario (`?scenario=`) | Checks |
 |---|---|---|
-| S1 | `racing` (day 4) | Four buttons, Find Milan selected; "Last position 12 min ago"; the boat on the map in live blue; three conditions; Windy's forecast below the map on its Wind tab; the map on Wind; Wind, Waves, Pressure, Ocean currents to look out for, Wind marked; no extra notes |
+| S1 | `racing` (day 4) | Three buttons, Find Milan selected; "Last position 12 min ago"; the boat on the map in live blue; three conditions; Windy's forecast below the map on its Wind tab; the map on Wind; Wind, Waves, Pressure, Ocean currents to look out for, Wind marked; no extra notes |
 | S2 | `quiet` (no position for 5 h) | "Last position 5 h ago" and nothing else; the boat grey, no pulse |
 | S3 | `before` (the boat in the harbour) | "The race hasn’t started yet"; the boat where it is, no speed, no track; countdown; "Conditions at the start"; no boat; the middle button says "The course" |
 | S4 | `finished` | "Finished in…"; race time instead of live speed; the boat grey |
@@ -115,8 +120,8 @@ changes the photo behind the panel, `&embed` hides the pills.
 | S15 | Windy's forecast and layers | No forecast card while it's at the boat; Whole race → it stays open; opened elsewhere + Find Milan → back at the boat on Wind; opened elsewhere → "Back to Milan" → back on Wind; Pressure → Windy's map on pressure, marked; pages keep the layer; a layer picked in Windy is marked; opening again → Wind; before the start Tidal currents; the real race.json's Saint-Malo line |
 | S16 | Scrolling | The top card stays at the top; nothing (Windy's forecast included) draws over it |
 | S17 | The Follow page | Milan ×2, Windy.com ×2, the race website; every link https, new tab, noopener; no second header |
-| S19 | The Video page (`&video=wide`, `short`, `both`) | Four names fit; none yet → "will send videos"; wide 16:9 and Shorts upright, privacy-enhanced YouTube; earlier ones listed and playable; the player goes when leaving the page; on a phone the whole upright player is in view |
-| S18 | Phones 320 and 390 px | Four buttons in the bar, names whole; Find Milan opens the Now page with the boat above the panel; nothing sticks out sideways; the same button closes the panel |
+| S19 | The video card (`&video=wide`, `short`, `both`, `auto`) | No video: no card; right under the conditions; wide 16:9 and Shorts upright, privacy-enhanced YouTube; the earlier one listed and playable; the player goes when leaving the page; found by the Action (videos.json) shows too; on a phone the whole upright player fits the panel |
+| S18 | Phones 320 and 390 px | Three buttons in the bar, names whole; Find Milan opens the Now page with the boat above the panel; nothing sticks out sideways; the same button closes the panel |
 
 Every scenario also checks that the page threw no script errors.
 
@@ -146,8 +151,8 @@ phone view).
 - [ ] Note whether opening the forecast moves the map (Windy does this on its own) and whether that's acceptable.
 
 **Phone**
-- [ ] The bar under the timeline: Race Tracker and four buttons, every name whole.
-- [ ] Video: once race.json has a video, it plays in the panel (a Short upright).
+- [ ] The bar under the timeline: Race Tracker and three buttons.
+- [ ] Video: once there is one, it plays on Find Milan's page under the conditions (a Short upright).
 - [ ] Find Milan opens the Now page in a panel over the map, the boat visible above it; the same button closes it.
 - [ ] Whole race shows the race above the panel; Follow Milan shows the links.
 - [ ] "Show" on the Now page opens Windy's forecast over the map.

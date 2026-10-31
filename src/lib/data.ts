@@ -82,7 +82,7 @@ export function youtubeId(v: unknown): string {
     const id = u.hostname.endsWith('youtu.be') ? u.pathname.slice(1) : u.searchParams.get('v') || u.pathname.match(/^\/(?:shorts|embed|live|v)\/([^/?#]+)/)?.[1] || '';
     return /^[\w-]{11}$/.test(id) ? id : '';
 }
-function readVideos(v: unknown): RaceInfo['videos'] {
+export function readVideos(v: unknown): RaceInfo['videos'] {
     return (Array.isArray(v) ? v : []).slice(0, 20).map(x => {
         const r: Record<string, unknown> = rec(x) ?? { url: x };
         const url = str(r.url, 300);
@@ -90,6 +90,17 @@ function readVideos(v: unknown): RaceInfo['videos'] {
         return { id, vertical: r.vertical === true || /\/shorts\//.test(url), title: str(r.title, 120), date: readTime(r.date) };
     }).filter((x, i, a) => x.id && a.findIndex(y => y.id === x.id) === i)
         .sort((a, b) => (b.date ?? 0) - (a.date ?? 0));
+}
+
+/**
+ * data/videos.json (written by the update-track Action from a YouTube playlist or channel) added to race.json's own
+ * videos: one list, newest first; race.json wins for a video that's in both (its title, upright or not)
+ */
+export function withVideos(race: RaceInfo, raw: unknown): RaceInfo {
+    const auto = readVideos(rec(raw)?.videos);
+    if (!auto.length) {return race;}
+    const all = [...race.videos, ...auto.filter(a => !race.videos.some(v => v.id === a.id))].sort((a, b) => (b.date ?? 0) - (a.date ?? 0));
+    return { ...race, videos: all.slice(0, 20) };
 }
 
 /** A photo: a file next to race.json, an https address, or (for the sandbox) a picture written into the file */

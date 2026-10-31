@@ -6,7 +6,7 @@ in the **Route du Rhum 2026** (Saint-Malo → Guadeloupe, start 1 November 2026)
 
 Everyone sees the same data: `data/race.json` (who and which race, edited by hand) and `data/track.json` (the
 positions, added every 15 minutes by the `update-track` workflow from the boat's tracker, never ahead of the official
-race tracker). Videos for the Video page go in `race.json` too (`videos`). See [docs/data.md](docs/data.md).
+race tracker). New YouTube videos are picked up the same way from a playlist set in `race.json` (`youtube`). See [docs/data.md](docs/data.md).
 
 ## Develop
 

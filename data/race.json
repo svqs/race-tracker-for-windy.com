@@ -68,5 +68,8 @@
         "name": "Route du Rhum official tracker",
         "url": "https://carto.routedurhum.com/en/index.html",
         "boat": "59"
+    },
+    "youtube": {
+        "playlist": "PLKGh7_gk-WF8"
     }
 }

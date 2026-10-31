@@ -92,6 +92,7 @@ something changed and the check passed. Each scenario runs the real script in a 
 | F27 | No YouTube playlist or channel | Nothing happens |
 | F28 | A playlist | New videos newest first, Shorts upright, titles unescaped, nothing from long before the start; the same again: file untouched |
 | F29 | A channel by its @handle | The channel id from its page; a Short linked as a normal video found via youtube.com/shorts/ |
+| F31 | The real playlist (its feed of 31 Oct) | Its video, wide |
 | F30 | YouTube down / playlist gone | The video step fails, videos.json untouched; positions still go out |
 | F21 | YB's real answer (my.yb.tl/oceancall, 30 Oct: `t` latitude, `g` longitude, no speed) | Read exactly |
 

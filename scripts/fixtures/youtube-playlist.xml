@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <link rel="self" href="http://www.youtube.com/feeds/videos.xml?playlist_id=PLKGh7_gk-WF8"/>
+ <id>yt:playlist:PLKGh7_gk-WF8</id>
+ <yt:playlistId>PLKGh7_gk-WF8</yt:playlistId>
+ <yt:channelId>UCeFoK1yKOTUBgfP_rTBoVvw</yt:channelId>
+ <title>Milan Koláček at Route du Rhum 2026</title>
+ <author>
+  <name>Windycom</name>
+  <uri>https://www.youtube.com/channel/UCeFoK1yKOTUBgfP_rTBoVvw</uri>
+ </author>
+ <published>2026-10-31T15:18:33+00:00</published>
+ <entry>
+  <id>yt:video:9OPozTSNank</id>
+  <yt:videoId>9OPozTSNank</yt:videoId>
+  <yt:channelId>UCeFoK1yKOTUBgfP_rTBoVvw</yt:channelId>
+  <title>What Are Sailors Up Against? Milan Koláček Breaks Down the Route du Rhum 2026 Start Weather</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=9OPozTSNank"/>
+  <author>
+   <name>Windycom</name>
+   <uri>https://www.youtube.com/channel/UCeFoK1yKOTUBgfP_rTBoVvw</uri>
+  </author>
+  <published>2026-10-31T15:18:53+00:00</published>
+  <updated>2026-10-31T15:18:53+00:00</updated>
+  <media:group>
+   <media:title>What Are Sailors Up Against? Milan Koláček Breaks Down the Route du Rhum 2026 Start Weather</media:title>
+   <media:content url="https://www.youtube.com/v/9OPozTSNank?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/9OPozTSNank/hqdefault.jpg" width="480" height="360"/>
+   <media:description>…</media:description>
+   <media:community>
+    <media:starRating count="0" average="0.00" min="1" max="5"/>
+    <media:statistics views="5"/>
+   </media:community>
+  </media:group>
+ </entry>
+</feed>

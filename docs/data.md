@@ -66,7 +66,7 @@ the boat sent it.
   e.g. `{ "layer": "pressure", "phase": "racing", "text": "A big low crosses the fleet on Tuesday." }`.
 - **Videos** show on Find Milan's page, under "Conditions right now", once there is one (none: no card). Two ways,
   both without publishing the plugin:
-  - automatic: `"youtube": { "playlist": "PL…" }` (or `{ "channel": "UC…" }` / `{ "channel": "@handle" }`). The
+  - automatic: `"youtube": { "playlist": "PL…" }` (Milan: `PLKGh7_gk-WF8`, "Milan Koláček at Route du Rhum 2026" on Windy's channel) (or `{ "channel": "UC…" }` / `{ "channel": "@handle" }`). The
     update-track Action reads YouTube's public feed every 15 minutes and writes new videos to `data/videos.json`
     (only videos from a week before the start on; `"since"` changes that). A playlist is best: only what you add to
     it shows. Shorts are found and play upright.

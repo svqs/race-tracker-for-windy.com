@@ -398,6 +398,16 @@ await scenario('F30 YouTube down or the playlist gone: the step fails, videos.js
     assert.equal(readFileSync(path.join(dir, 'data/videos.json'), 'utf8'), before);
 });
 
+await scenario('F31 the real playlist (Milan Koláček at Route du Rhum 2026, its feed on 31 Oct): its video, wide', async () => {
+    const dir = withYoutube(folder(), { playlist: 'PLKGh7_gk-WF8' });
+    const early = JSON.parse(readFileSync(path.join(dir, 'data/race.json'), 'utf8'));
+    writeFileSync(path.join(dir, 'data/race.json'), JSON.stringify({ ...early, start: { ...early.start, time: '2026-11-01T12:02:00Z' } }));
+    ytFeed = readFileSync(path.join(root, 'scripts/fixtures/youtube-playlist.xml'), 'utf8');
+    const r = await runVideos(dir);
+    assert.equal(r.code, 0, r.out);
+    assert.deepEqual(vids(dir), [{ url: 'https://www.youtube.com/watch?v=9OPozTSNank', title: 'What Are Sailors Up Against? Milan Koláček Breaks Down the Route du Rhum 2026 Start Weather', date: '2026-10-31T15:18:53.000Z', vertical: false }]);
+});
+
 server.close();
 const bad = results.filter(r => r[0] === '✗');
 for (const r of results) {console.log(r.join('  '));}

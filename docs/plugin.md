@@ -17,7 +17,7 @@ Windy's own point forecast at its position (below the map, on the Wind tab) and 
 
 ```
 YB tracker on the boat ──satellite──▶ YB's servers (app.yb.tl)
-                                          │  every 15 min: .github/workflows/update-track.yml
+                                          │  scheduled every 15 min (often later): .github/workflows/update-track.yml
                                           ▼  runs scripts/fetch-track.mjs, then scripts/check-data.mjs
                          GitHub repository svqs/Race-Tracker-for-Windy.com
                          data/race.json  (by hand: who, which race, start, finish, links, photos)
@@ -28,8 +28,9 @@ YB tracker on the boat ──satellite──▶ YB's servers (app.yb.tl)
 ```
 
 - One public source of truth: everyone sees the same track, nobody can change it from the plugin.
-- GitHub caches raw files for up to ~5 min and scheduled Actions often start late, so a position shows up ~15–30 min
-  after the boat sent it.
+- GitHub caches raw files for up to ~5 min, and GitHub runs scheduled Actions on a best-effort basis: on 30 Oct–1 Nov
+  its runs were 3–6 hours apart, not 15 minutes. So a position shows up between ~15 min and several hours after the
+  boat sent it (see [data.md](data.md), "How often it runs"). The boat turns grey after 3 hours without a new position.
 - The plugin keeps the last good copy in the viewer's browser (`localStorage`, key `racetrack-last`), so it shows
   something at once and keeps working when GitHub or the network fails.
 - Secrets (`TRACK_FEED_PASSWORD`, `WINDY_API_KEY`) only exist in GitHub Actions secrets; the plugin has none.
@@ -53,7 +54,7 @@ src/lib/copy.ts          every word the plugin shows
 data/                    race.json, track.json, milan.jpg, boat-bg.jpg (and two photos not in use)
 scripts/                 fetch-track (the Action's reader), check-data, tests, sample data, packaging, publishing
 harness/                 the sandbox: a fake Windy (mock-windy.js), the page, screenshots and scenario tests
-.github/workflows/       validate (every push), update-track (every 15 min), publish-plugin (by hand)
+.github/workflows/       validate (every push), update-track (scheduled every 15 min), publish-plugin (by hand)
 ```
 
 The build is Windy's plugin template: Svelte 4, TypeScript, LESS, Rollup; `@windy/*` imports become `W.*` at build

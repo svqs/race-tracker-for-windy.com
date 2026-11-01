@@ -31,7 +31,7 @@ lists every test scenario and the checks to do by hand in real Windy.
   each, nothing else), the athlete's newest YouTube video right under it, only once there is one (desktop: thumbnail and play
   button first, YouTube's player only on play, its own title bar was too big; phones: a link "Watch video updates from
   the boat" to the newest video in the playlist on YouTube, because YouTube's player refuses some phone setups, error 153; owner, 31 Oct;
-  race.json `videos`, or found every 15 min by the update-track Action from race.json `youtube`: data/videos.json), "Things to look out for" (Windy layers, one line each, a tap switches Windy's map; lines from
+  race.json `videos`, or found by the update-track Action (scheduled every 15 min) from race.json `youtube`: data/videos.json), "Things to look out for" (Windy layers, one line each, a tap switches Windy's map; lines from
   `src/lib/layers.ts` + copy.ts, changeable in race.json `watch`), the boat's numbers. Windy's own point forecast is
   open below the map (desktop), on its Wind tab; the map is on Wind whenever racetrack opens (owner, 30 Oct).
   Phones: the same three buttons in the bar; each opens its page in the panel and moves the map above it

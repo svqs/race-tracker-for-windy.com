@@ -59,7 +59,7 @@ The plugin fetches two files from GitHub every 5 minutes. These scenarios feed i
 
 ## F · Feed (scripts/test-feed.mjs)
 
-The GitHub Action runs `scripts/fetch-track.mjs` every 15 minutes, then `scripts/check-data.mjs`, and commits only when
+The GitHub Action runs `scripts/fetch-track.mjs` (scheduled every 15 minutes), then `scripts/check-data.mjs`, and commits only when
 something changed and the check passed. Each scenario runs the real script in a fresh folder against a fake tracker.
 
 | # | Scenario | Expected |

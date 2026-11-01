@@ -1,5 +1,5 @@
 // Finds the athlete's new YouTube videos and writes data/videos.json (run by .github/workflows/update-track.yml,
-// every 15 minutes). The plugin reads that file next to race.json, so a new video shows up on Find Milan's page
+// scheduled every 15 minutes). The plugin reads that file next to race.json, so a new video shows up on Find Milan's page
 // without editing anything or publishing the plugin.
 //
 // Where to look, in data/race.json:

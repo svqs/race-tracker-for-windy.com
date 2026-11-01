@@ -11,8 +11,9 @@ data/track.json   the positions                               (written by the Gi
 The plugin reads them from
 `https://raw.githubusercontent.com/svqs/Race-Tracker-for-Windy.com/main/data/race.json` (`DATA_URL` in
 `src/lib/source.ts`), every 5 minutes while it's open. GitHub caches these files for up to 5 minutes, and the Action
-runs every 15 minutes (GitHub often starts scheduled runs late), so a position usually shows up 15–30 minutes after
-the boat sent it.
+is scheduled every 15 minutes. GitHub only runs schedules on a best-effort basis: on 30 Oct–1 Nov its runs were 3–6
+hours apart. So a position shows up anywhere from about 15 minutes to several hours after the boat sent it (see
+"How often it runs" below).
 
 ## race.json
 
@@ -67,7 +68,7 @@ the boat sent it.
 - **Videos** show on Find Milan's page, under "Conditions right now", once there is one (none: no card). Two ways,
   both without publishing the plugin:
   - automatic: `"youtube": { "playlist": "PL…" }` (Milan: `PLKGh7_gk-WF8`, "Milan Koláček at Route du Rhum 2026" on Windy's channel) (or `{ "channel": "UC…" }` / `{ "channel": "@handle" }`). The
-    update-track Action reads YouTube's public feed every 15 minutes and writes new videos to `data/videos.json`
+    update-track Action reads YouTube's public feed on every run (see "How often it runs") and writes new videos to `data/videos.json`
     (only videos from a week before the start on; `"since"` changes that). A playlist is best: only what you add to
     it shows. Shorts are found and play upright.
   - by hand: `"videos": [{ "url": "https://youtube.com/shorts/…", "title": "Reefing for the night", "date": "2026-11-03T18:00:00Z" }]`.
@@ -103,7 +104,7 @@ the boat sent it.
 
 ## Updating the track automatically
 
-`.github/workflows/update-track.yml` runs every 15 minutes. It runs `scripts/fetch-track.mjs`, which reads the
+`.github/workflows/update-track.yml` is scheduled every 15 minutes (see "How often it runs" below). It runs `scripts/fetch-track.mjs`, which reads the
 tracker's feed, **adds** the new positions (it never removes any), checks both files with `scripts/check-data.mjs`,
 and commits only when something changed. A file that fails the check is never committed.
 
@@ -118,6 +119,22 @@ Set the feed in the repository: **Settings → Secrets and variables → Actions
 | `TRACK_FEED_PASSWORD` | secret | only if the feed has a password |
 
 Without `TRACK_FEED_TYPE` the Action does nothing, and the track is updated by hand.
+
+### How often it runs
+
+The schedule is `7,22,37,52 * * * *`: every 15 minutes, at minutes 7, 22, 37 and 52. GitHub starts scheduled runs on a
+best-effort basis and delays or drops them under high load, which GitHub says includes the start of every hour; round
+minutes are where most people schedule. With the first schedule (`*/15`) the first nine runs, 30 Oct 19:37 to 1 Nov
+07:52 (GMT+1), were 3 to 6 hours apart. Moving to quieter minutes may help, but nothing in GitHub guarantees it.
+
+- **Check it** on the repository's Actions tab: the times of the runs are the real rhythm. A green run only means
+  nothing crashed: open its "Copy new positions" step, which says `Added N positions`, `No new positions.` or
+  `No feed set` (the variables above are missing).
+- **Why it matters:** racetrack turns the boat grey when its newest position is older than 3 hours, so a long gap
+  between runs looks like a quiet tracker.
+- **Run it now:** Actions → update-track → Run workflow (it also starts on its own schedule).
+- **A reliable timer** (not set up): an outside service that calls GitHub's `workflow_dispatch` API every 5–10
+  minutes. It needs a token that can only run workflows, kept in that service, so that is the owner's decision.
 
 **Milan's boat has a YB (YellowBrick) tracker.** The `yb` reader asks YB's map service for the positions behind the
 tracker's public page (the same ones its map shows: time, lat, lng, speed, course). Two things to check on the first

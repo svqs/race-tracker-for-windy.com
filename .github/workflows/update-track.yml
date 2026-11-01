@@ -1,11 +1,13 @@
 name: update-track
-# Every 15 minutes: copy new positions from the tracker's feed into data/track.json, and new YouTube videos into
-# data/videos.json.
+# Scheduled every 15 minutes, at minutes 7, 22, 37 and 52 (GitHub delays or drops scheduled runs under high load, which
+# it says includes the start of every hour, and most people schedule on round minutes; on 30 Oct–1 Nov, with */15, the
+# runs were 3–6 hours apart): copy new positions from the tracker's feed into
+# data/track.json, and new YouTube videos into data/videos.json. Still best effort: see docs/data.md, "How often it runs".
 # The feed is set in Settings → Secrets and variables → Actions (see docs/data.md). Without one, nothing happens.
 # With race.json "official", positions wait until the organisers' map shows them (scripts/official.mjs, headless Chrome).
 on:
     schedule:
-        - cron: '*/15 * * * *'
+        - cron: '7,22,37,52 * * * *'
     workflow_dispatch:
 permissions:
     contents: write

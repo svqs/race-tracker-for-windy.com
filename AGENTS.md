@@ -31,7 +31,7 @@ lists every test scenario and the checks to do by hand in real Windy.
   each, nothing else), the athlete's newest YouTube video right under it, only once there is one (desktop: thumbnail and play
   button first, YouTube's player only on play, its own title bar was too big; phones: a link "Watch video updates from
   the boat" to the newest video in the playlist on YouTube, because YouTube's player refuses some phone setups, error 153; owner, 31 Oct;
-  race.json `videos`, or found by the update-track Action (scheduled every 15 min) from race.json `youtube`: data/videos.json), "Things to look out for" (Windy layers, one line each, a tap switches Windy's map; lines from
+  race.json `videos`, or found by the update-track Action (every 5 min) from race.json `youtube`: data/videos.json), "Things to look out for" (Windy layers, one line each, a tap switches Windy's map; lines from
   `src/lib/layers.ts` + copy.ts, changeable in race.json `watch`), the boat's numbers. Windy's own point forecast is
   open below the map (desktop), on its Wind tab; the map is on Wind whenever racetrack opens (owner, 30 Oct).
   Phones: the same three buttons in the bar; each opens its page in the panel and moves the map above it
@@ -39,9 +39,11 @@ lists every test scenario and the checks to do by hand in real Windy.
 - **Phases:** before the start (countdown, wind at the start, the course; the boat where it is now, no track), racing (live), quiet (no position for
   3 hours: the boat turns grey; the Now page only ever says when the last position came, no other notes), finished or retired (race time, sailed, average).
 - **Data:** two JSON files in this repository, read by everyone. See [docs/data.md](docs/data.md).
-- **Never ahead of the organisers** (owner, 31 Oct): the track starts at the start, and the update-track Action holds
-  back any position the official tracker (race.json `official`, carto.routedurhum.com) doesn't show yet and compares
-  ours with theirs in its log (`scripts/official.mjs`). Before the start, only where the boat is now.
+- **Live, every 5 minutes** (owner, 1 Nov): update-track runs `scripts/update-loop.sh` for almost six hours and starts
+  the next run itself; `TRACK_INTERVAL_MINUTES` changes the interval (docs/data.md, "How often it runs").
+- **Official tracker check** (race.json `official`, carto.routedurhum.com, `scripts/official.mjs`): holds back positions
+  the organisers' map doesn't show yet. SWITCHED OFF on 1 Nov (commented out in `scripts/fetch-track.mjs`); the owner
+  turns it back on from 2 Nov afternoon. The track starts at the start either way.
 
 ## Ground rules (from Sophia, the owner, a designer at Windy)
 
@@ -85,7 +87,8 @@ src/lib/forecast.ts      Windy's forecast where the boat is (ECMWF wind, ECMWF/G
 src/lib/map/             the race on the map
 data/                    race.json and track.json (the live data)
 scripts/fetch-track.mjs  the tracker feed → track.json, never ahead of the official map (scripts/official.mjs)
-scripts/fetch-videos.mjs YouTube playlist/channel → videos.json (both run by .github/workflows/update-track.yml)
+scripts/fetch-videos.mjs YouTube playlist/channel → videos.json
+scripts/update-loop.sh   both, every 5 minutes for ~6 h, committed (.github/workflows/update-track.yml, which restarts itself)
 scripts/check-data.mjs   checks the data files (Action, validate workflow, npm run test:data)
 harness/                 fake Windy (mock-windy.js), sandbox page, screenshots, browser scenarios (test-scenarios.py)
 scripts/test-*.mjs       unit checks, data scenarios (test-fetch), feed scenarios (test-feed)

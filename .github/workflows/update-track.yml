@@ -1,35 +1,36 @@
 name: update-track
-# Scheduled every 15 minutes, at minutes 7, 22, 37 and 52 (GitHub delays or drops scheduled runs under high load, which
-# it says includes the start of every hour, and most people schedule on round minutes; on 30 Oct–1 Nov, with */15, the
-# runs were 3–6 hours apart): copy new positions from the tracker's feed into
-# data/track.json, and new YouTube videos into data/videos.json. Still best effort: see docs/data.md, "How often it runs".
-# The feed is set in Settings → Secrets and variables → Actions (see docs/data.md). Without one, nothing happens.
-# With race.json "official", positions wait until the organisers' map shows them (scripts/official.mjs, headless Chrome).
+# Milan's positions and videos, live: one run keeps going for almost six hours, fetching every
+# TRACK_INTERVAL_MINUTES (variable, default 5) and committing what's new (scripts/update-loop.sh), then starts the next
+# run itself. GitHub's schedule below is only a safety net: if the chain ever stops, it starts it again within two
+# hours (while a run is going, it just waits). Pushing this file (or the loop) starts it right away.
+# The feed is set in Settings → Secrets and variables → Actions (see docs/data.md). Without one, positions don't change.
 on:
+    push:
+        branches: [main]
+        paths: ['.github/workflows/update-track.yml', 'scripts/update-loop.sh']
     schedule:
-        - cron: '7,22,37,52 * * * *'
+        - cron: '7 */2 * * *'
     workflow_dispatch:
 permissions:
     contents: write
+    actions: write
 concurrency:
     group: update-track
     cancel-in-progress: false
 jobs:
     update:
         runs-on: ubuntu-latest
-        timeout-minutes: 8
+        timeout-minutes: 358
         steps:
             - uses: actions/checkout@v4
               with:
-                  # the newest main, not the commit the run was triggered on: a run that waited behind another one
-                  # ("concurrency" below) has to start from what that run committed, or their data files collide
-                  ref: ${{ github.ref_name }}
+                  ref: main
             - uses: actions/setup-node@v4
               with:
                   node-version: '22'
                   cache: npm
             - run: npm ci --no-audit --no-fund
-            - name: Copy new positions
+            - name: Every few minutes, for almost six hours - positions and videos
               env:
                   TRACK_FEED_TYPE: ${{ vars.TRACK_FEED_TYPE }}
                   TRACK_FEED_URL: ${{ vars.TRACK_FEED_URL }}
@@ -37,30 +38,11 @@ jobs:
                   TRACK_FEED_EVENT: ${{ vars.TRACK_FEED_EVENT }}
                   TRACK_FEED_SPEED: ${{ vars.TRACK_FEED_SPEED }}
                   OFFICIAL_CHECK: ${{ vars.OFFICIAL_CHECK }}
-              run: node scripts/fetch-track.mjs data/track.json
-            # new videos on the YouTube playlist or channel in race.json ("youtube") → data/videos.json; runs (and gets
-            # committed) even when the positions step failed, e.g. while the official map can't be read
-            - name: Find new videos
+                  TRACK_INTERVAL_MINUTES: ${{ vars.TRACK_INTERVAL_MINUTES || '5' }}
+              run: bash scripts/update-loop.sh
+            # the next run takes over (a run started with this workflow's own token may start another one this way)
+            - name: Start the next run
               if: ${{ !cancelled() }}
-              continue-on-error: true
-              run: node scripts/fetch-videos.mjs data/videos.json
-            - name: Check the files (a broken file is never committed)
-              id: check
-              if: ${{ !cancelled() }}
-              run: node scripts/check-data.mjs data
-            - name: Commit when something changed
-              if: ${{ !cancelled() && steps.check.outcome == 'success' }}
-              run: |
-                  if git diff --quiet -- data; then echo "Nothing new."; exit 0; fi
-                  git config user.name "racetrack bot"
-                  git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-                  git add data
-                  git commit -m "track: new positions or videos"
-                  # if main changed while this run was working, don't fight over the files: the scripts only ever add
-                  # to what's on main (positions after the newest one, the videos from YouTube), so the next run redoes it
-                  if ! git pull --rebase --quiet; then
-                      git rebase --abort || true
-                      echo "::warning::main changed while this run was working, so its data was not committed. The next run redoes it."
-                      exit 0
-                  fi
-                  git push
+              env:
+                  GH_TOKEN: ${{ github.token }}
+              run: gh workflow run update-track.yml --ref main

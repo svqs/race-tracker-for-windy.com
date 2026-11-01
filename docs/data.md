@@ -10,9 +10,8 @@ data/track.json   the positions                               (written by the Gi
 
 The plugin reads them from
 `https://raw.githubusercontent.com/svqs/Race-Tracker-for-Windy.com/main/data/race.json` (`DATA_URL` in
-`src/lib/source.ts`), every 5 minutes while it's open. GitHub caches these files for up to 5 minutes, and the Action
-is scheduled every 15 minutes. GitHub only runs schedules on a best-effort basis: on 30 Oct–1 Nov its runs were 3–6
-hours apart. So a position shows up anywhere from about 15 minutes to several hours after the boat sent it (see
+`src/lib/source.ts`), every 5 minutes while it's open. The Action fetches new positions every 5 minutes, and GitHub
+caches these files for up to 5 minutes, so a position usually shows up about 5–15 minutes after the boat sent it (see
 "How often it runs" below).
 
 ## race.json
@@ -122,19 +121,19 @@ Without `TRACK_FEED_TYPE` the Action does nothing, and the track is updated by h
 
 ### How often it runs
 
-The schedule is `7,22,37,52 * * * *`: every 15 minutes, at minutes 7, 22, 37 and 52. GitHub starts scheduled runs on a
-best-effort basis and delays or drops them under high load, which GitHub says includes the start of every hour; round
-minutes are where most people schedule. With the first schedule (`*/15`) the first nine runs, 30 Oct 19:37 to 1 Nov
-07:52 (GMT+1), were 3 to 6 hours apart. Moving to quieter minutes may help, but nothing in GitHub guarantees it.
+**Every 5 minutes, all the time** (since 1 Nov, owner's decision; GitHub's own schedule left 1–3 hours between runs).
+One run of update-track stays on for almost six hours (GitHub's limit), and every `TRACK_INTERVAL_MINUTES` (a variable
+in Settings → Secrets and variables → Actions; default 5, the tracker's own interval) it fetches new positions and
+videos and commits them (`scripts/update-loop.sh`). Before it ends, it starts the next run itself. The schedule
+(`7 */2 * * *`) is only a safety net that restarts the chain within two hours if it ever stops; while a run is going,
+a scheduled one just waits. Pushing the workflow file or the loop starts it at once.
 
-- **Check it** on the repository's Actions tab: the times of the runs are the real rhythm. A green run only means
-  nothing crashed: open its "Copy new positions" step, which says `Added N positions`, `No new positions.` or
-  `No feed set` (the variables above are missing).
-- **Why it matters:** racetrack turns the boat grey when its newest position is older than 3 hours, so a long gap
-  between runs looks like a quiet tracker.
-- **Run it now:** Actions → update-track → Run workflow (it also starts on its own schedule).
-- **A reliable timer** (not set up): an outside service that calls GitHub's `workflow_dispatch` API every 5–10
-  minutes. It needs a token that can only run workflows, kept in that service, so that is the owner's decision.
+- **Check it** on the Actions tab: one update-track run "in progress" at a time, each about six hours long. Its
+  step "Every few minutes…" lists every round (`Added N positions`, `No new positions.`, `Nothing new.`).
+- **Change the interval:** set the variable `TRACK_INTERVAL_MINUTES` (e.g. 10); the next run uses it. Or change the
+  default in `.github/workflows/update-track.yml`.
+- **Stop it** (after the race): Actions → update-track → ⋯ → Disable workflow, then cancel the run in progress.
+- Public repositories don't pay for Actions minutes, so running all the time costs nothing.
 
 **Milan's boat has a YB (YellowBrick) tracker.** The `yb` reader asks YB's map service for the positions behind the
 tracker's public page (the same ones its map shows: time, lat, lng, speed, course). Two things to check on the first

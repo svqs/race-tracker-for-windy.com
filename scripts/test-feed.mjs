@@ -262,7 +262,14 @@ const withOfficial = dir => {
 const offTrack = hours => ({ id: '59', name: 'Inland Roots, Ocean Soul', state: 'RUNNING', standby: false, start: START,
     points: hours.map(h => ({ t: START + h * H, lat: 48.5 - h * 0.1, lon: -2.4 - h * 0.2 })) });
 
-await scenario('F22 official map: positions newer than its newest one wait, and come in once it shows them', async () => {
+// The official-map check in scripts/fetch-track.mjs was switched off on 1 Nov 2026 (it is commented out there). While it
+// is, its scenarios (F22–F25) are skipped, not failed. They run again as soon as the "// " in front of that block is removed.
+const GUARD_ON = /^if \(race\.official\?\.url/m.test(readFileSync(path.join(root, 'scripts/fetch-track.mjs'), 'utf8'));
+const guardScenario = async (name, fn) => {
+    if (GUARD_ON) {await scenario(name, fn);} else {results.push(['-', `${name}  (skipped: the official-map check is switched off in scripts/fetch-track.mjs)`]);}
+};
+
+await guardScenario('F22 official map: positions newer than its newest one wait, and come in once it shows them', async () => {
     const dir = withOfficial(folder());
     answer = yb([ybPos(1), ybPos(2), ybPos(3)]);
     let r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: officialFile(offTrack([0, 1, 2])) });
@@ -273,7 +280,7 @@ await scenario('F22 official map: positions newer than its newest one wait, and 
     assert.equal(trackOf(dir).points.length, 3, 'now the official map has it too');
     assert.ok(await checkData(dir));
 });
-await scenario('F23 official map before the start (its times still in the future, the real answer of 31 Oct): positions up to now come in', async () => {
+await guardScenario('F23 official map before the start (its times still in the future, the real answer of 31 Oct): positions up to now come in', async () => {
     const dir = withOfficial(folder());
     const early = JSON.parse(readFileSync(path.join(dir, 'data/race.json'), 'utf8'));
     writeFileSync(path.join(dir, 'data/race.json'), JSON.stringify({ ...early, start: { ...early.start, time: iso(NOW + 48 * H) } }));
@@ -283,7 +290,7 @@ await scenario('F23 official map before the start (its times still in the future
     assert.equal(trackOf(dir).points.length, 1);
     assert.match(r.out, /Inland Roots, Ocean Soul \(boat 59\)/);
 });
-await scenario('F24 official map can\'t be read: the run fails and nothing new is published; OFFICIAL_CHECK=off skips it', async () => {
+await guardScenario('F24 official map can\'t be read: the run fails and nothing new is published; OFFICIAL_CHECK=off skips it', async () => {
     const dir = withOfficial(folder()); const before = raw(dir);
     answer = yb([ybPos(1)]);
     const r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: path.join(dir, 'missing.json') });
@@ -293,7 +300,7 @@ await scenario('F24 official map can\'t be read: the run fails and nothing new i
     assert.equal(r2.code, 0, r2.out);
     assert.equal(trackOf(dir).points.length, 1);
 });
-await scenario('F25 compares our track with the official one and warns when they\'re far apart', async () => {
+await guardScenario('F25 compares our track with the official one and warns when they\'re far apart', async () => {
     const dir = withOfficial(folder());
     answer = yb([ybPos(1), ybPos(2)]);
     let r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: officialFile(offTrack([1, 2])) });

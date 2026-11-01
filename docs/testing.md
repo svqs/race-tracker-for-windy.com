@@ -96,6 +96,9 @@ something changed and the check passed. Each scenario runs the real script in a 
 | F30 | YouTube down / playlist gone | The video step fails, videos.json untouched; positions still go out |
 | F21 | YB's real answer (my.yb.tl/oceancall, 30 Oct: `t` latitude, `g` longitude, no speed) | Read exactly |
 
+F22–F25 are **skipped** (shown with `-`, not failed) while the official-map check in `scripts/fetch-track.mjs` is
+commented out (switched off on 1 Nov 2026). They run again once the `// ` in front of that block is removed.
+
 ## S · Browser (harness/test-scenarios.py)
 
 The sandbox (`harness/index.html`) is a fake Windy map with the real, built plugin. `?scenario=` picks the race; the

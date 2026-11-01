@@ -12,3 +12,6 @@ dist/*
 plugin.tar
 harness/sandbox.html
 data/sample/
+cloudflare/trigger/.wrangler/
+.dev.vars
+.env

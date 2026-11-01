@@ -1,0 +1,14 @@
+name = "racetrack-trigger"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+# how often the update-track workflow is started (UTC). Every 5 minutes is plenty: the track data takes a few more
+# minutes to reach the plugin anyway (GitHub's cache 5 min, the plugin looks every 5 min).
+[triggers]
+crons = ["*/5 * * * *"]
+
+[vars]
+REPO = "svqs/Race-Tracker-for-Windy.com"
+WORKFLOW = "update-track.yml"
+REF = "main"
+# GITHUB_TOKEN is a secret, not a variable: npx wrangler secret put GITHUB_TOKEN

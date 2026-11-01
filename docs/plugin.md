@@ -55,6 +55,7 @@ data/                    race.json, track.json, milan.jpg, boat-bg.jpg (and two 
 scripts/                 fetch-track (the Action's reader), check-data, tests, sample data, packaging, publishing
 harness/                 the sandbox: a fake Windy (mock-windy.js), the page, screenshots and scenario tests
 .github/workflows/       validate (every push), update-track (scheduled every 15 min), publish-plugin (by hand)
+cloudflare/trigger/      a Cloudflare Worker that starts update-track every 5 min (GitHub's schedule is unreliable); not part of the plugin
 ```
 
 The build is Windy's plugin template: Svelte 4, TypeScript, LESS, Rollup; `@windy/*` imports become `W.*` at build

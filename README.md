@@ -5,7 +5,8 @@ distance to the finish, the conditions where the boat is, and which Windy layers
 in the **Route du Rhum 2026** (Saint-Malo → Guadeloupe, start 1 November 2026).
 
 Everyone sees the same data: `data/race.json` (who and which race, edited by hand) and `data/track.json` (the
-positions, added every 5 minutes by the `update-track` workflow from the boat's tracker, which keeps itself running). New YouTube videos are picked up the same way from a playlist set in `race.json` (`youtube`). See [docs/data.md](docs/data.md).
+positions, added by the `update-track` workflow from the boat's tracker, which a small Cloudflare Worker starts every
+5 minutes; GitHub's own schedule is only the backup). New YouTube videos are picked up the same way from a playlist set in `race.json` (`youtube`). See [docs/data.md](docs/data.md).
 
 ## Develop
 

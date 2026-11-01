@@ -18,6 +18,10 @@ jobs:
         timeout-minutes: 8
         steps:
             - uses: actions/checkout@v4
+              with:
+                  # the newest main, not the commit the run was triggered on: a run that waited behind another one
+                  # ("concurrency" below) has to start from what that run committed, or their data files collide
+                  ref: ${{ github.ref_name }}
             - uses: actions/setup-node@v4
               with:
                   node-version: '22'
@@ -50,5 +54,11 @@ jobs:
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
                   git add data
                   git commit -m "track: new positions or videos"
-                  git pull --rebase --quiet
+                  # if main changed while this run was working, don't fight over the files: the scripts only ever add
+                  # to what's on main (positions after the newest one, the videos from YouTube), so the next run redoes it
+                  if ! git pull --rebase --quiet; then
+                      git rebase --abort || true
+                      echo "::warning::main changed while this run was working, so its data was not committed. The next run redoes it."
+                      exit 0
+                  fi
                   git push

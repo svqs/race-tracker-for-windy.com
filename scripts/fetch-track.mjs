@@ -141,24 +141,29 @@ let fresh = (await readers[type]()).filter(p => {
     return true;
 });
 
+// SWITCHED OFF on 1 Nov 2026 (decided with the team): the official map showed no positions for boat 59 before the start,
+// so this check held back every position and track.json stayed empty. Positions from YB are published without it, so
+// racetrack can now be AHEAD of the organisers' map. To turn it back on, remove the "// " from the block below (the
+// official map is read again, positions newer than it wait, and the run's log compares both tracks).
+//
 // the official tracker (race.json "official"): never show a position the organisers' map doesn't show yet. Newer ones
 // wait here (the feed sends them again next time). If the official map can't be read, nothing new is published and
 // the run fails, so someone notices. OFFICIAL_CHECK=off skips it (e.g. if the organisers' map is down for long).
-if (race.official?.url && (process.env.OFFICIAL_CHECK || '').toLowerCase() !== 'off') {
-    const official = await readOfficial(race.official, race.athlete?.name);
-    const g = gate(fresh, official);
-    fresh = g.kept;
-    const c = compare([...points, ...fresh], official);
-    const when = t => (t ? new Date(t).toISOString().replace(/:\d\d\.\d+Z$/, ' UTC').replace('T', ' ') : 'none');
-    const lines = [
-        `Official map: ${official.name} (boat ${official.id}), ${official.points.length} positions, newest ${when(c.lastOfficial)}.`,
-        `Showing up to ${when(g.until)}${g.held ? `; ${g.held} newer position(s) wait for the official map` : ''}.`,
-        c.compared ? `Compared ${c.compared} official position(s) with ours: at most ${c.worstNm} NM apart.` : 'Nothing to compare yet (no official position after the start).',
-    ];
-    if (c.worstNm > 2) lines.push(`WARNING: our track is ${c.worstNm} NM away from the official one somewhere: check the tracker.`);
-    console.log(lines.join('\n'));
-    if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Official tracker\n\n${lines.map(l => `- ${l}`).join('\n')}\n`);
-}
+// if (race.official?.url && (process.env.OFFICIAL_CHECK || '').toLowerCase() !== 'off') {
+//     const official = await readOfficial(race.official, race.athlete?.name);
+//     const g = gate(fresh, official);
+//     fresh = g.kept;
+//     const c = compare([...points, ...fresh], official);
+//     const when = t => (t ? new Date(t).toISOString().replace(/:\d\d\.\d+Z$/, ' UTC').replace('T', ' ') : 'none');
+//     const lines = [
+//         `Official map: ${official.name} (boat ${official.id}), ${official.points.length} positions, newest ${when(c.lastOfficial)}.`,
+//         `Showing up to ${when(g.until)}${g.held ? `; ${g.held} newer position(s) wait for the official map` : ''}.`,
+//         c.compared ? `Compared ${c.compared} official position(s) with ours: at most ${c.worstNm} NM apart.` : 'Nothing to compare yet (no official position after the start).',
+//     ];
+//     if (c.worstNm > 2) lines.push(`WARNING: our track is ${c.worstNm} NM away from the official one somewhere: check the tracker.`);
+//     console.log(lines.join('\n'));
+//     if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Official tracker\n\n${lines.map(l => `- ${l}`).join('\n')}\n`);
+// }
 
 if (!fresh.length) {
     console.log('No new positions.');

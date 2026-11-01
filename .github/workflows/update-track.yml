@@ -14,9 +14,11 @@ on:
 permissions:
     contents: write
     actions: write
+# a new version of this workflow or the loop (a push) replaces the run in progress at once; the schedule and the next
+# run started by the loop wait for it instead
 concurrency:
     group: update-track
-    cancel-in-progress: false
+    cancel-in-progress: ${{ github.event_name == 'push' }}
 jobs:
     update:
         runs-on: ubuntu-latest

@@ -17,14 +17,15 @@ while :; do
     round=$((round + 1)); started=$SECONDS
     echo "::group::Round $round, $(date -u +%H:%M) UTC"
     # start from the newest main each time (race.json edited by hand, or a push from elsewhere)
-    git fetch --quiet origin main && git reset --quiet --hard origin/main || echo "::warning::couldn't get the newest main; using what's here"
-    node scripts/fetch-track.mjs data/track.json || echo "::warning::positions: this round failed (the next one tries again)"
-    node scripts/fetch-videos.mjs data/videos.json || echo "::warning::videos: this round failed (the next one tries again)"
+    timeout 60 git fetch --quiet origin main && git reset --quiet --hard origin/main || echo "::warning::couldn't get the newest main; using what's here"
+    # every step has a time limit: one feed that never answers must not stop all the rounds after it (1 Nov)
+    timeout 150 node scripts/fetch-track.mjs data/track.json || echo "::warning::positions: this round failed (the next one tries again)"
+    timeout 90 node scripts/fetch-videos.mjs data/videos.json || echo "::warning::videos: this round failed (the next one tries again)"
     if node scripts/check-data.mjs data > /dev/null; then
         if ! git diff --quiet -- data; then
             git add data
             git commit --quiet -m "track: new positions or videos"
-            git push --quiet origin HEAD:main && echo "Committed." || echo "::warning::couldn't push (main changed meanwhile); the next round redoes it"
+            timeout 60 git push --quiet origin HEAD:main && echo "Committed." || echo "::warning::couldn't push (main changed meanwhile); the next round redoes it"
         else
             echo "Nothing new."
         fi

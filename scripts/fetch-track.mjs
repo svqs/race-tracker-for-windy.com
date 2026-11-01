@@ -40,7 +40,8 @@ const headers = { 'user-agent': 'racetrack-windy-plugin (github action)' };
 if (password) headers.authorization = 'Basic ' + Buffer.from(`:${password}`).toString('base64');
 
 async function get(u) {
-    const r = await fetch(u, { headers });
+    // never wait forever: a feed that doesn't answer would stop every update after it
+    const r = await fetch(u, { headers, signal: AbortSignal.timeout(30e3) });
     if (!r.ok) throw new Error(`the feed answered ${r.status} ${r.statusText}`);
     return r.text();
 }

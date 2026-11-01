@@ -21,7 +21,7 @@ if (!cfg.playlist && !cfg.channel) {
 }
 const headers = { 'user-agent': 'racetrack-windy-plugin (github action)', 'accept-language': 'en' };
 async function get(u, opts = {}) {
-    const r = await fetch(u, { headers, ...opts });
+    const r = await fetch(u, { headers, signal: AbortSignal.timeout(30e3), ...opts });
     if (!r.ok) throw new Error(`YouTube answered ${r.status} for ${u}`);
     return r.text();
 }
@@ -51,7 +51,7 @@ const known = new Map((old.videos || []).map(v => [v.url.match(/([\w-]{11})$/)?.
 /** is it a Short? youtube.com/shorts/<id> shows a Short, and sends anything else on to the normal page */
 async function isShort(id) {
     try {
-        const r = await fetch(`${BASE}/shorts/${id}`, { headers, method: 'HEAD', redirect: 'manual' });
+        const r = await fetch(`${BASE}/shorts/${id}`, { headers, method: 'HEAD', redirect: 'manual', signal: AbortSignal.timeout(20e3) });
         return r.status === 200;
     } catch {
         return false;

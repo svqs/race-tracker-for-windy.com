@@ -102,6 +102,8 @@
         {:else if video}
             <div class="card vid">
                 <b>{ W.videoTitle }</b>
+                <!-- an upright video (a Short) sits smaller on the left with its title beside it (owner, 2 Nov) -->
+                <div class="vmain" class:tall={ video.vertical }>
                 <div class="player" class:tall={ video.vertical }>
                     {#if playing === video.id}
                         <!-- YouTube's player, only once someone presses play (it starts straight away) -->
@@ -119,10 +121,12 @@
                     {/if}
                 </div>
                 {#if video.title || video.date}<div class="vmeta">{#if video.title}<span class="vt">{ video.title }</span>{/if}{#if video.date}<small>{ dayTime(video.date) }</small>{/if}</div>{/if}
+                </div>
                 {#if earlier.length}
-                    <!-- the ones before it, in one row that scrolls sideways inside the card (owner, 2 Nov): a tap plays it here instead -->
+                    <!-- the ones before it: a short list with small thumbnails that scrolls inside the card, so the card
+                         never grows (owner, 2 Nov); a tap plays it here instead -->
                     <small class="vh">{ W.videoEarlier }</small>
-                    <div class="vlist" on:wheel={ sideways }>
+                    <div class="vlist">
                         {#each earlier as v (v.id)}
                             <button class="vitem" aria-label={ fill(W.videoPlay, { title: v.title || fill(W.videoUntitled, { short: race.athlete.short }) }) } on:click={ () => { videoId = v.id; playing = v.id; } }>
                                 <img src={ `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg` } alt="" loading="lazy" referrerpolicy="no-referrer" on:error={ hideImg } />
@@ -410,18 +414,9 @@
     const youtubeLink = (v: { id: string; vertical: boolean }, playlist: string): string =>
         v.vertical ? `https://www.youtube.com/shorts/${v.id}` : `https://www.youtube.com/watch?v=${v.id}${playlist ? `&list=${playlist}` : ''}`;
     /** a thumbnail that doesn't load: nothing (not the browser's broken-picture mark) */
-    const hideImg = (e: Event) => { (e.currentTarget as HTMLElement).style.visibility = 'hidden'; };
+    const hideImg = (e: Event) => { (e.currentTarget as HTMLElement).style.opacity = '0'; };
     $: video = race?.videos.find(v => v.id === videoId) ?? race?.videos[0] ?? null;
     $: earlier = race && video ? race.videos.filter(v => v.id !== video?.id) : [];
-    /** a mouse wheel scrolls the row of earlier videos sideways, until its end (then the page scrolls on) */
-    function sideways(e: WheelEvent) {
-        const el = e.currentTarget as HTMLElement;
-        if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || el.scrollWidth <= el.clientWidth) {return;}
-        const max = el.scrollWidth - el.clientWidth;
-        if ((e.deltaY > 0 && el.scrollLeft >= max - 1) || (e.deltaY < 0 && el.scrollLeft <= 0)) {return;}
-        e.preventDefault();
-        el.scrollLeft += e.deltaY;
-    }
 
     // the race's positions only: from the start, like the official tracker (nothing earlier)
     $: racePts = race && track ? track.points.filter(p => p.t >= race.start.time) : [];
@@ -645,9 +640,36 @@
         }
         return 120;
     }
-    /** Tapping the boat opens Windy's own point forecast where the boat is */
+    /**
+     * Tapping the boat (or its tag): desktop shows Find Milan's page, brings the boat to the middle of the map (the zoom
+     * stays) and opens Windy's forecast there on its Wind tab; phones open the forecast (bug 2 Nov: with the forecast
+     * already at the boat a tap seemed to do nothing)
+     */
     function boatTapped() {
+        if (!race) {return;}
+        if (!barMode) {
+            if (tab !== 'now') {setTab('now');}
+            const at = here || race.start;
+            try {
+                map?.panTo?.([at.lat, at.lon], { animate: true });
+            } catch {
+                /* the map keeps its place */
+            }
+        }
         openForecast();
+        if (!isMobile) {setTimeout(() => {if (!destroyed) {windTab();}}, 400);}
+    }
+
+    /** the boat a little smaller as the map zooms out (owner, 2 Nov): a class on the map, read by the marker's CSS */
+    function onZoom() {
+        try {
+            const z = currentZoom();
+            const el = map.getContainer();
+            el.classList.toggle('rt-zmid', z >= 5 && z < 7);
+            el.classList.toggle('rt-zfar', z < 5);
+        } catch {
+            /* the boat keeps its size */
+        }
     }
     /** Find the boat: the map goes there (phones with the panel up: into the part of the map above it) */
     function findBoat() {
@@ -881,6 +903,12 @@
     onMount(() => {
         setTimeout(() => {if (!destroyed) {paintPane();}}, 120);
         document.addEventListener('error', onPhotoError, true);
+        try {
+            map.on('zoomend', onZoom);
+        } catch {
+            /* the boat keeps its size */
+        }
+        onZoom();
         const add = (id: string, css: string) => {
             if (document.getElementById(id)) {return;}
             const el = document.createElement('style');
@@ -919,6 +947,12 @@
         clearInterval(tickTimer);
         document.removeEventListener('visibilitychange', onVisible);
         document.removeEventListener('error', onPhotoError, true);
+        try {
+            map.off('zoomend', onZoom);
+            map.getContainer().classList.remove('rt-zmid', 'rt-zfar');
+        } catch {
+            /* already gone */
+        }
         window.removeEventListener('error', onWinError);
         window.removeEventListener('unhandledrejection', onRejection);
         errBox?.remove();

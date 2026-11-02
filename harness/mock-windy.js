@@ -147,6 +147,8 @@
     };
     const leafletMap = {
         getCenter: centre,
+        getContainer: () => mapEl(),
+        panTo: (ll) => { const [lat, lon] = Array.isArray(ll) ? ll : [ll.lat, ll.lng]; window.__panTo = [lat, lon]; setView(lat, lon, view.k); },
         getZoom: () => Math.round(4 - Math.log2(view.k)),
         createPane: name => {
             if (!panes[name]) {

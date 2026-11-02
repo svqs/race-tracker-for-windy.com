@@ -157,7 +157,7 @@
      * upright for a Short (9:16, fitted to the panel's height) */
     .vid { gap: 12px; }
     .player { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; overflow: hidden; background: #000;
-        &.tall { aspect-ratio: 9 / 16; width: auto; height: min(480px, 62vh); max-width: 100%; align-self: center; }
+        &.tall { aspect-ratio: 9 / 16; width: 150px; height: auto; flex: none; }
         iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
         /* before playing: the thumbnail and a play button, no YouTube title bar over it (owner, 31 Oct: it was too big) */
         .poster { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: #000; cursor: pointer;
@@ -165,8 +165,10 @@
             .pbtn { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 28px; background: rgba(20, 20, 20, 0.72);
                 display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4); transition: transform 0.15s ease, background 0.15s ease; }
             &:hover .pbtn, &:focus-visible .pbtn { transform: scale(1.06); background: var(--rt-highlight, #d49500); } } }
-    /* phones: the upright player fits the panel's height (the panel is the screen minus Windy's bar and the map above) */
-    .racetrack.m .player.tall { height: max(240px, calc(100dvh - 480px)); }
+    /* the newest video and its title: a wide one full width with the title under it; an upright one (a Short) 150 px wide
+       on the left with the title beside it, at its foot (owner, 2 Nov: the big upright player crowded the card) */
+    .vmain { display: flex; flex-direction: column; gap: 12px;
+        &.tall { flex-direction: row; align-items: flex-end; gap: 14px; .vmeta { flex: 1; min-width: 0; padding-bottom: 2px; } } }
     /* under the player: the video's title in regular weight (owner, 31 Oct), then when it was posted */
     .vmeta { display: flex; flex-direction: column; gap: 2px; .vt { font-size: 14px; font-weight: 400; line-height: 1.4; } small { color: var(--rt-uSub, @sub); } }
     /* phones: the newest video as a link to YouTube (thumbnail, "Watch video updates from the boat", its title) */
@@ -176,16 +178,17 @@
         .pbtn.small { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 15px; background: rgba(20, 20, 20, 0.72); display: flex; align-items: center; justify-content: center; }
         .grow { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; b { font-size: 14px; } small { color: var(--rt-uSub, @sub); font-size: 12px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } }
         .go { flex: none; color: var(--rt-uSub, @sub); font-size: 15px; } }
-    /* earlier videos: one row of thumbnails that scrolls sideways inside the card (owner, 2 Nov), so the card never grows */
+    /* earlier videos: a short list with small thumbnails that scrolls inside the card (owner, 2 Nov: the card never grows) */
     .vh { color: var(--rt-uSub, @sub); font-size: 12px; margin-top: 2px; }
-    .vlist { display: flex; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; padding-bottom: 6px; margin-top: -4px;
+    .vlist { display: flex; flex-direction: column; max-height: 132px; overflow-y: auto; overscroll-behavior: contain; margin-top: -6px; padding-right: 4px;
         scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
-        &::-webkit-scrollbar { height: 6px; } &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.28); border-radius: 3px; } }
-    .vitem { flex: 0 0 132px; display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 0; margin: 0; border: 0; border-radius: 8px;
-        background: transparent; text-align: left; color: @text !important; cursor: pointer; scroll-snap-align: start;
-        img { width: 132px; height: 74px; object-fit: cover; border-radius: 8px; display: block; background: #000; transition: opacity 0.15s; }
-        &:hover img { opacity: 0.85; }
-        .grow { display: flex; flex-direction: column; gap: 2px; min-width: 0;
+        &::-webkit-scrollbar { width: 6px; } &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.28); border-radius: 3px; } }
+    .vitem { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 4px; margin: 0; box-sizing: border-box; border: 0; border-top: 1px solid @line; border-radius: 0;
+        background: transparent; text-align: left; color: @text !important; cursor: pointer; flex: none;
+        &:first-child { border-top: 0; }
+        &:hover { background: rgba(255, 255, 255, 0.04); }
+        img { width: 64px; height: 36px; object-fit: cover; border-radius: 6px; flex: none; background: #000; }
+        .grow { display: flex; flex-direction: column; gap: 1px; min-width: 0;
             b { font-size: 12.5px; font-weight: 400; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
             small { color: var(--rt-uSub, @sub); font-size: 11.5px; } } }
     /* the whole fleet on the organisers' tracker: a quiet line at the end of Find Milan's page (owner, 2 Nov) */
@@ -263,6 +266,11 @@
     /* the boat: a black Class40 turned the way it's sailing, in a live blue ring; then the tag (photo, name, speed, rank, flag) */
     :global(.rt-boat) { position: absolute; left: 0; top: 0; width: 0; height: 0; cursor: pointer; --rt-hw: 20px; --rt-ring: 38px; }
     :global(.rt-boat.small) { --rt-hw: 16px; --rt-ring: 30px; }
+    /* zoomed out the boat gets smaller (owner, 2 Nov): zoom 5–6 and below 5 (plugin.svelte onZoom) */
+    :global(.rt-zmid .rt-boat) { --rt-hw: 16px; --rt-ring: 30px; }
+    :global(.rt-zmid .rt-boat.small) { --rt-hw: 13px; --rt-ring: 25px; }
+    :global(.rt-zfar .rt-boat) { --rt-hw: 13px; --rt-ring: 25px; }
+    :global(.rt-zfar .rt-boat.small) { --rt-hw: 11px; --rt-ring: 21px; }
     :global(.rt-hull) { position: absolute; left: calc(var(--rt-hw) / -2); top: calc(var(--rt-hw) * -1); width: var(--rt-hw); height: calc(var(--rt-hw) * 2); display: block;
         transform-origin: 50% 50%; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)); svg { display: block; width: 100%; height: 100%; overflow: visible; } }
     :global(.rt-ring) { position: absolute; left: calc(var(--rt-ring) / -2); top: calc(var(--rt-ring) / -2); width: var(--rt-ring); height: var(--rt-ring); border-radius: 50%;

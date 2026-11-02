@@ -45,4 +45,6 @@ writeFileSync(new URL('../data/sample/race.json', import.meta.url), JSON.stringi
 writeFileSync(new URL('../data/sample/track.json', import.meta.url), `{\n    "updated": "${iso(now)}",\n    "points": [\n${points.map(p => '        ' + JSON.stringify(p)).join(',\n')}\n    ]\n}\n`);
 // the real videos (data/videos.json, from Milan's playlist) in the made-up race too, so the video card shows
 if (existsSync(new URL('../data/videos.json', import.meta.url))) {copyFileSync(new URL('../data/videos.json', import.meta.url), new URL('../data/sample/videos.json', import.meta.url));}
+// and the real rank (data/ranking.json, from the organisers' tracker), so the rank shows while working on it
+if (existsSync(new URL('../data/ranking.json', import.meta.url))) {copyFileSync(new URL('../data/ranking.json', import.meta.url), new URL('../data/sample/ranking.json', import.meta.url));}
 console.log(`Sample race (${scenario}) in data/sample/: ${points.length} positions, start ${iso(start)}`);

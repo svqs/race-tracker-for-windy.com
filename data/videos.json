@@ -1,7 +1,13 @@
 {
-    "updated": "2026-11-01T10:30:54.446Z",
+    "updated": "2026-11-02T15:15:58.997Z",
     "source": "https://www.youtube.com/feeds/videos.xml?playlist_id=PLKGh7_gk-WF8",
     "videos": [
+        {
+            "url": "https://www.youtube.com/shorts/yYP8yVXrE_Q",
+            "title": "Day 1 at Route du Rhum: Out of the Channel, Into the Atlantic",
+            "date": "2026-11-02T15:13:19.000Z",
+            "vertical": true
+        },
         {
             "url": "https://www.youtube.com/watch?v=tVoqGOyQjZk",
             "title": "Leaving Saint-Malo Before Sunrise on Race Day",

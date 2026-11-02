@@ -276,6 +276,8 @@
     :global(.rt-ring) { position: absolute; left: calc(var(--rt-ring) / -2); top: calc(var(--rt-ring) / -2); width: var(--rt-ring); height: var(--rt-ring); border-radius: 50%;
         border: 2px solid var(--rt-boatLive, #3b8bff); box-sizing: border-box; opacity: 0.6; pointer-events: none; }
     :global(.rt-boat.quiet .rt-ring) { border-color: var(--rt-boatStale, #9aa0a6); }
+    /* desktop: the tag on the boat's left, away from Windy's forecast labels, which always fan out to the right (owner, 2 Nov) */
+    :global(.rt-boat:not(.small) .rt-tagline) { left: auto; right: calc(var(--rt-ring) / 2 + 4px); }
     :global(.rt-boat .rt-ava.map) { width: 20px; height: 20px; font-size: 8px; margin-left: -6px; }
     :global(.rt-boat.small .rt-ava.map) { width: 18px; height: 18px; }
     :global(.rt-tagline) { position: absolute; left: calc(var(--rt-ring) / 2 + 4px); top: -12px; display: flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 9px; border-radius: 12px; white-space: nowrap;

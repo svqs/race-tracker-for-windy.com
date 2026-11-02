@@ -2,7 +2,7 @@ import type { ExternalPluginConfig } from '@windy/interfaces';
 
 const config: ExternalPluginConfig = {
     name: 'windy-plugin-racetrack',
-    version: '1.2.6',
+    version: '1.2.7',
     icon: '⛵',
     // the name in Windy's list of plugins (Windy needs more than 7 characters)
     title: 'Race Tracker',

@@ -15,7 +15,8 @@ lists every test scenario and the checks to do by hand in real Windy.
 - **Map:** the track so far (black line; start green, finish blue), the boat (a black Class40 seen from above with a white
   edge, turned to its course, in a live blue ring with a soft pulse; the ring turns grey when the tracker is quiet or the race
   is over; owner's pick, 2 Nov). It shrinks as the map zooms out: 20, 16, 13 px wide (zoom 7+, 5–6, below 5; a class
-  rt-zmid / rt-zfar on the map container), and phones draw it one step smaller (16, 13, 11), then a black tag: the
+  rt-zmid / rt-zfar on the map container), and phones draw it one step smaller (16, 13, 11), then a black tag (desktop:
+  on the boat's left, because Windy's forecast marker fans its green model labels out to the right; phones: right): the
   athlete's photo, the name, the speed, the rank, the flag, start and finish, and a dotted great-circle line to the finish.
   Tapping the boat or its tag: desktop shows Find Milan's page, pans the boat to the middle (same zoom) and opens
   Windy's point forecast there on its Wind tab; phones open the forecast. There is no card on the map (owner's decision).
@@ -45,7 +46,7 @@ lists every test scenario and the checks to do by hand in real Windy.
 - **Ranking** (owner, 2 Nov): `scripts/fetch-ranking.mjs`, a step of update-track, reads Milan's rank in his class from
   the official tracker's current report into `data/ranking.json` (only opens the map when versions.txt says there's a
   new report). Shown only while racing: a soft orange pill "8th of 49" next to the name (drops to its own line on
-  narrow phones), and "8th" in the boat's tag on the map (owner's picks, 2 Nov). The plugin reads the file next to race.json
+  narrow phones; it opens the race tracker in a new window), and "8th" in the boat's tag on the map (owner's picks, 2 Nov). The plugin reads the file next to race.json
   like videos.json (optional; anything odd, or a status other than RAC, shows nothing).
 - **Race tracker link** (owner, 2 Nov): a quiet underlined line at the very end of Find Milan's page, "See the whole fleet
   on the Route du Rhum tracker" (race.json `official.name`; never the word "official"), no arrow, opens a new window.

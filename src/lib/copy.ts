@@ -27,7 +27,7 @@ export const COPY_GROUPS: CopyGroup[] = [
     { id: 'head', title: 'The top card', items: [
         ['statSpeed', 'Speed'], ['statToFinish', 'To finish'], ['statAtSea', 'At sea'], ['statSailed', 'Sailed'], ['statTime', 'Race time'],
         ['rank', '{nth} of {of}', 'Next to the name, and {nth} on the map: the rank in the class from the organisers’ tracker'],
-        ['rankTitle', '{nth} of {of} in {class} (the race tracker, updated about hourly)', 'Hover text of the rank'],
+        ['rankTitle', '{nth} of {of} in {class}: see the whole fleet on the race tracker', 'Hover text of the rank (it opens the race tracker)'],
         ['statStartsIn', 'Starts in'], ['statDistance', 'Distance'], ['statStart', 'Start'], ['statAverage', 'Average'],
         ['startsIn', 'Starts in {time}'], ['startsAt', '{day}, {clock} from {place}'], ['startsNow', 'Starting any minute'],
         ['finishedIn', 'Finished in {time}'], ['retired', 'Out of the race'],

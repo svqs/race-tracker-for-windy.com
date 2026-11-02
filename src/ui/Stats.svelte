@@ -2,7 +2,7 @@
 <div class="who">
     {@html avatarHtml(race.athlete.name, photo, 'panel')}
     <span class="who-t">
-        <b class="name"><span class="nm">{ race.athlete.name }</span>{@html flagHtml(race.athlete.flag, 13)}{#if rank}<span class="rank" title={ fill($words.rankTitle, rank) }>{ fill($words.rank, rank) }</span>{/if}</b>
+        <b class="name"><span class="nm">{ race.athlete.name }</span>{@html flagHtml(race.athlete.flag, 13)}{#if rank}{#if race.officialUrl}<a class="rank" href={ race.officialUrl } target="_blank" rel="noopener noreferrer" title={ fill($words.rankTitle, rank) }>{ fill($words.rank, rank) }</a>{:else}<span class="rank" title={ fill($words.rankTitle, rank) }>{ fill($words.rank, rank) }</span>{/if}{/if}</b>
         <small>{ [race.athlete.boat, race.athlete.boatName, race.race.short].filter(Boolean).join(' · ') }</small>
     </span>
 </div>
@@ -48,11 +48,14 @@
 
 <style lang="less">
     .who { display: flex; align-items: center; gap: 12px; min-width: 0; }
-    .who-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .who-t { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
     .name { display: flex; flex-wrap: wrap; row-gap: 4px; align-items: center; gap: 8px; font-size: var(--rt-titleSize, 17px); font-weight: 600; min-width: 0;
         .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
     .rank { flex: none; padding: 3px 8px; border-radius: 9px; background: var(--rt-rankBg); border: 1px solid var(--rt-rankLine); color: var(--rt-rankText);
-        font-size: 11.5px; font-weight: 600; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        font-size: 11.5px; font-weight: 600; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; text-decoration: none; }
+    /* the rank opens the organisers' tracker in a new window (owner, 2 Nov) */
+    a.rank { cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease;
+        &:hover, &:focus-visible { background: var(--rt-rankLine); border-color: var(--rt-rankText); color: #fff; } }
     small { color: var(--rt-uSub, #b0b0b0); font-size: 12px; }
     .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; } }
     .lbl { font-size: 12px; color: var(--rt-uSub, #b0b0b0); white-space: nowrap; }

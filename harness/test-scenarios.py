@@ -318,6 +318,10 @@ with sync_playwright() as p:
     # S21 the rank, the earlier videos in a sideways row, the link to the race tracker (owner, 2 Nov) ----------------
     ctx, pg = open_page(b, 'scenario=racing&video=many')
     check('S21 rank: a pill next to the name, "8th of 49" (ranking.json)', text(pg, '.card.head .who .rank') == '8th of 49', text(pg, '.card.head .who .rank'))
+    rk = pg.evaluate("(() => { const a = document.querySelector('.card.head .who a.rank'); return a && [a.href, a.target, a.rel]; })()")
+    check('S21 rank: tapping it opens the race tracker in a new window', bool(rk) and rk[0] == 'https://carto.routedurhum.com/en/index.html' and rk[1] == '_blank' and 'noopener' in rk[2], rk)
+    side = pg.evaluate("(() => { const t = document.querySelector('.rt-tagline').getBoundingClientRect(), h = document.querySelector('.rt-hull').getBoundingClientRect(); return t.right < h.left; })()")
+    check('S21 boat: on desktop the tag sits on the boat\'s left (Windy\'s forecast labels fan out to the right)', side)
     check('S21 rank: in the tag on the map too, "8th"', text(pg, '.rt-tagline .rt-rank') == '8th', text(pg, '.rt-tagline .rt-rank'))
     lst = pg.evaluate("(() => { const l = document.querySelector('.vlist'); const im = l.querySelector('.vitem img').getBoundingClientRect(); return [l.querySelectorAll('.vitem').length, l.scrollHeight > l.clientHeight, Math.round(l.getBoundingClientRect().height), Math.round(im.width), Math.round(im.height)]; })()")
     check('S21 videos: all five earlier ones in a short list that scrolls inside the card, small thumbnails (64 x 36)', lst[0] == 5 and lst[1] and lst[2] <= 140 and lst[3] == 64 and lst[4] == 36, lst)

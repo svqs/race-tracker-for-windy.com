@@ -1,6 +1,6 @@
 {
     "name": "windy-plugin-racetrack",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "description": "racetrack: follow one sailor live on the Windy map during a race",
     "main": "dist/plugin.min.js",
     "type": "module",

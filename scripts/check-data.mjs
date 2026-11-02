@@ -29,3 +29,9 @@ if (existsSync(path.join(dir, 'videos.json'))) {
     if (raw.videos.length && !ok.length) fail(`none of the ${raw.videos.length} videos in videos.json is a YouTube video`);
     console.log(`✓ ${ok.length} videos from YouTube${ok.length ? `, newest "${ok[0].title}"` : ''}`);
 }
+// data/ranking.json (the official tracker's ranking, by the update-track Action) is optional too
+if (existsSync(path.join(dir, 'ranking.json'))) {
+    const r = json('ranking.json');
+    if (!Number.isInteger(r?.rank) || !Number.isInteger(r?.of) || r.rank < 1 || r.rank > r.of) fail('ranking.json needs "rank" and "of" (whole numbers, rank between 1 and of)');
+    console.log(`✓ ranking ${r.rank} of ${r.of}${r.class ? ` in ${r.class}` : ''}${r.report ? ` (report ${r.report})` : ''}`);
+}

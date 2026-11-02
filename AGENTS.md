@@ -39,6 +39,12 @@ lists every test scenario and the checks to do by hand in real Windy.
 - **Phases:** before the start (countdown, wind at the start, the course; the boat where it is now, no track), racing (live), quiet (no position for
   3 hours: the boat turns grey; the Now page only ever says when the last position came, no other notes), finished or retired (race time, sailed, average).
 - **Data:** two JSON files in this repository, read by everyone. See [docs/data.md](docs/data.md).
+- **Ranking** (owner, 2 Nov): `scripts/fetch-ranking.mjs`, a step of update-track, reads Milan's rank in his class from
+  the official tracker's current report into `data/ranking.json` (only opens the map when versions.txt says there's a
+  new report). Display: not built yet (options sent to the owner first).
+- **Forecast never closes the plugin** (bug, 2 Nov): Windy's rqstOpen of a bottom-pane plugin (the forecast) closes
+  everything in the right-hand pane; racetrack opens the forecast with `plugins.detail.open({ params })` instead (desktop).
+- **Whole race** opens the track page only; it doesn't move the map (owner, 2 Nov).
 - **Official tracker check** (race.json `official`, carto.routedurhum.com, `scripts/official.mjs`): holds back positions
   the organisers' map doesn't show yet. SWITCHED OFF on 1 Nov (commented out in `scripts/fetch-track.mjs`); the owner
   turns it back on from 2 Nov afternoon. The track starts at the start either way.

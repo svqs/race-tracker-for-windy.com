@@ -136,7 +136,7 @@ with sync_playwright() as p:
     ctx, pg = open_page(b, 'scenario=live')
     before = pg.locator('.rt-boat .rt-ava').bounding_box()
     sent = []
-    pg.evaluate("window.__sent = []; W.broadcast.on('rqstOpen', (w, p) => { if (w === 'detail') window.__sent.push([p.lat, p.lon]); })")
+    pg.evaluate("() => { window.__sent = []; const d = W.plugins.detail, o = d.open; d.open = (x) => { window.__sent.push([x.params.lat, x.params.lon]); return o(x); }; }")
     pg.evaluate('window.__racetrackRefresh()')
     pg.wait_for_timeout(2500)
     after = pg.locator('.rt-boat .rt-ava').bounding_box()
@@ -203,8 +203,12 @@ with sync_playwright() as p:
     ctx, pg = open_page(b, 'scenario=racing')
     check('S15 forecast: open at the boat, no forecast card in the panel', pg.locator('.card.pf').count() == 0, pg.locator('.card.pf').count())
     pg.click('#plugin-detail .switch__item >> text=Airgram'); pg.wait_for_timeout(200)
+    view = "(() => { const c = W.map.map.getCenter(); return [c.lat.toFixed(3), c.lng.toFixed(3), W.map.map.getZoom()]; })()"
+    v0 = pg.evaluate(view)
     pg.click('.act >> nth=1'); pg.wait_for_timeout(400)
+    check('S15 Whole race leaves the map where the viewer had it (no zooming out)', pg.evaluate(view) == v0, (v0, pg.evaluate(view)))
     check('S15 forecast: Whole race → it stays open below the map', pg.evaluate(WHERE_FC) == 'under map', pg.evaluate(WHERE_FC))
+    
     pg.evaluate("W.broadcast.emit('rqstOpen', 'detail', { lat: 40, lon: -30 })"); pg.wait_for_timeout(500)
     pg.click('.act >> nth=0'); pg.wait_for_timeout(1500)
     check('S15 forecast: opened somewhere else, then Find Milan → back at the boat, on the Wind tab', pg.locator('.card.pf').count() == 0 and pg.evaluate(FC_TAB) == 'Wind', pg.evaluate(FC_TAB))
@@ -233,6 +237,17 @@ with sync_playwright() as p:
     ctx, pg = open_page(b, 'scenario=real')
     t = pg.inner_text('.watch')
     check("S15 real race.json: its own tides line (Saint-Malo) before the start", 'Saint-Malo has some of the biggest tides' in t or 'Ocean currents' in t, t[:200])
+    ctx.close()
+
+    # S20 Windy's forecast never closes Race Tracker (bug 2 Nov: rqstOpen of the forecast closes the right-hand pane) ------
+    ctx, pg = open_page(b, 'scenario=live')
+    pg.evaluate("window.__paneClosed = 0")
+    pg.click('.act >> nth=0'); pg.wait_for_timeout(800)
+    pg.evaluate('window.__racetrackRefresh()'); pg.wait_for_timeout(2500)
+    pg.evaluate("W.broadcast.emit('rqstOpen', 'detail', { lat: 40, lon: -30 })"); pg.wait_for_timeout(500)
+    pg.click('.pf-btn'); pg.wait_for_timeout(800)
+    check('S20 the forecast: opened, followed to a new position and Back to Milan, all without Windy\'s rqstOpen (which would close Race Tracker)', pg.evaluate("window.__paneClosed") == 1 and pg.evaluate(WHERE_FC) == 'under map', pg.evaluate("window.__paneClosed"))
+    no_errors(pg, 'S20')
     ctx.close()
 
     # S16 the top card stays put; nothing draws over it -----------------------------------------------------------

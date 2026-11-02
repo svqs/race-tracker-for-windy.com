@@ -44,6 +44,13 @@ jobs:
               if: ${{ !cancelled() }}
               continue-on-error: true
               run: node scripts/fetch-videos.mjs data/videos.json
+            # Milan's ranking from the official race tracker → data/ranking.json, with every run (it only opens the
+            # official map when there's a new report); never holds up positions or videos
+            - name: Ranking from the official tracker
+              if: ${{ !cancelled() }}
+              continue-on-error: true
+              timeout-minutes: 3
+              run: node scripts/fetch-ranking.mjs data/ranking.json
             - name: Check the files (a broken file is never committed)
               id: check
               if: ${{ !cancelled() }}
@@ -55,7 +62,7 @@ jobs:
                   git config user.name "racetrack bot"
                   git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
                   git add data
-                  git commit -m "track: new positions or videos"
+                  git commit -m "track: new positions, videos or ranking"
                   # if main changed while this run was working, don't fight over the files: the scripts only ever add
                   # to what's on main (positions after the newest one, the videos from YouTube), so the next run redoes it
                   if ! git pull --rebase --quiet; then

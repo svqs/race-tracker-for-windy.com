@@ -138,11 +138,18 @@
   };
   const PF_TABS = ['Basic', 'Wave&Tide', 'Meteog.', 'Wind', 'Pollen&AirQ', 'Airgram'];
   let pfTab = 'Basic';
-  W.broadcast.on('rqstOpen', (what, p) => {
-    if (what !== 'detail' || !p) return;
+  const pfOpen = p => {
     pfFill(p);
     if (!pfNode.isConnected) { document.getElementById('map').appendChild(pfNode); setTimeout(() => W.broadcast.emit('pluginOpened', 'detail'), 50); }
+  };
+  // like Windy: rqstOpen of the forecast (a bottom-pane plugin) first closes what's in the right-hand pane
+  // (window.__paneClosed counts it); the forecast's own open() doesn't
+  W.broadcast.on('rqstOpen', (what, p) => {
+    if (what !== 'detail' || !p) return;
+    window.__paneClosed = (window.__paneClosed || 0) + 1;
+    pfOpen(p);
   });
+  W.plugins.detail.open = ({ params }) => { pfOpen(params); return Promise.resolve(); };
   W.broadcast.on('rqstClose', what => {
     if (what !== 'detail' || !pfNode.isConnected) return;
     pfNode.remove(); W.broadcast.emit('pluginClosed', 'detail');

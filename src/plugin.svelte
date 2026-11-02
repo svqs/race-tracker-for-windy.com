@@ -617,9 +617,10 @@
             moveMapFor(k);
         }
     }
+    /** Find Milan moves the map to the boat; Whole race leaves the map as the viewer had it (owner, 2 Nov: zooming out
+     *  to the whole race undid their zoom; they can zoom out themselves) */
     function moveMapFor(k: Tab) {
         if (k === 'now') {findBoat();}
-        else if (k === 'track') {wholeRace();}
     }
     let mwrapEl: HTMLElement | null = null;
     /** phones: how much of the map's bottom the panel (or the bar) covers, in px */
@@ -707,7 +708,17 @@
         pfSending = true;
         pfSentAt = Date.now();
         try {
-            bcast.emit('rqstOpen', 'detail', { lat: at.lat, lon: at.lon, name: race.athlete.name } as never);
+            const params = { lat: at.lat, lon: at.lon, name: race.athlete.name };
+            // Desktop: open Windy's forecast itself, not through rqstOpen. Windy's rule for rqstOpen of a bottom-pane
+            // plugin (pluginsCtrl, checked on windy.com 2 Nov) is to close everything in the right-hand pane first, which
+            // closed racetrack whenever it was already fully open (the "plugin doesn't open" bug: on opening, following a
+            // new position, Back to Milan). The forecast's own open() skips that rule; both stay open (checked on windy.com).
+            const det = detailPlugin();
+            if (!isMobile && det && typeof det.open === 'function') {
+                void Promise.resolve(det.open({ params })).catch(() => bcast.emit('rqstOpen', 'detail', params as never));
+            } else {
+                bcast.emit('rqstOpen', 'detail', params as never);
+            }
             pfOurs = true;
             pfAt = { lat: at.lat, lon: at.lon };
             // Windy says pluginOpened once it's open; until then (or if it never says so) take it as open
@@ -725,6 +736,14 @@
         if (barMode) {modalOpen = false;}
         sendForecast(here || race.start, true);
     }
+    /** Windy's point forecast plugin (plugins.detail) */
+    const detailPlugin = (): { open?: (o: { params: unknown }) => unknown } | null => {
+        try {
+            return (plugins as unknown as Record<string, { open?: (o: { params: unknown }) => unknown }>)?.detail ?? null;
+        } catch {
+            return null;
+        }
+    };
     const detailNode = (): HTMLElement | null => {
         try {
             const n = (plugins as unknown as Record<string, { node?: HTMLElement }>)?.detail?.node;

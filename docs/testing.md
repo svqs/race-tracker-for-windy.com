@@ -94,6 +94,9 @@ something changed and the check passed. Each scenario runs the real script in a 
 | F29 | A channel by its @handle | The channel id from its page; a Short linked as a normal video found via youtube.com/shorts/ |
 | F31 | The real playlist (its feed of 31 Oct) | Its video, wide |
 | F30 | YouTube down / playlist gone | The video step fails, videos.json untouched; positions still go out |
+| F32 | Ranking without an official tracker | Nothing |
+| F33 | Ranking: a new official report (its real answer, 2 Nov) | ranking.json 8 of 49 in Class40; the same report again: the map isn't opened, file untouched |
+| F34 | Ranking that makes no sense | The step fails, ranking.json untouched |
 | F21 | YB's real answer (my.yb.tl/oceancall, 30 Oct: `t` latitude, `g` longitude, no speed) | Read exactly |
 
 F22–F25 are **skipped** (shown with `-`, not failed) while the official-map check in `scripts/fetch-track.mjs` is
@@ -122,6 +125,7 @@ changes the photo behind the panel, `&embed` hides the pills.
 | S13 | `nophoto` | Initials (MK) in the panel and on the map; the broken photo draws nothing |
 | S14 | `racing&units=metric` | km/h and km from the viewer's Windy settings |
 | S15 | Windy's forecast and layers | No forecast card while it's at the boat; Whole race → it stays open; opened elsewhere + Find Milan → back at the boat on Wind; opened elsewhere → "Back to Milan" → back on Wind; Pressure → Windy's map on pressure, marked; pages keep the layer; a layer picked in Windy is marked; opening again → Wind; before the start Tidal currents; the real race.json's Saint-Malo line |
+| S20 | Windy's forecast never closes Race Tracker | Opening, following a new position and Back to Milan all open the forecast directly, never with rqstOpen (which closes the right-hand pane in Windy) |
 | S16 | Scrolling | The top card stays at the top; nothing (Windy's forecast included) draws over it |
 | S17 | The Follow page | Milan ×2, Windy.com ×2, the race website; every link https, new tab, noopener; no second header |
 | S19 | The video card (`&video=wide`, `short`, `both`, `auto`) | No video: no card; right under the conditions; first the thumbnail and a play button (no YouTube player, so no YouTube title bar), play starts it; the title under it regular, not bold; wide 16:9 and Shorts upright, privacy-enhanced YouTube; the earlier one listed and playable; the player goes when leaving the page; found by the Action (videos.json) shows too; on a phone a link "Watch video updates from the boat" to the newest video on YouTube (in the playlist; a Short as a Short), no player |

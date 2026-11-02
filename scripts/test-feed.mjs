@@ -415,6 +415,40 @@ await scenario('F31 the real playlist (Milan Koláček at Route du Rhum 2026, it
     assert.deepEqual(vids(dir), [{ url: 'https://www.youtube.com/watch?v=9OPozTSNank', title: 'What Are Sailors Up Against? Milan Koláček Breaks Down the Route du Rhum 2026 Start Weather', date: '2026-10-31T15:18:53.000Z', vertical: false }]);
 });
 
+// ---- the ranking from the official tracker → data/ranking.json (scripts/fetch-ranking.mjs) ----
+const RANKING = path.join(root, 'scripts/fixtures/official-ranking.json'); // the official map's answer, 2 Nov 15:00
+const runRanking = (dir, env = {}) => run(dir, env, 'scripts/fetch-ranking.mjs', ['data/ranking.json']);
+const rankingOf = dir => JSON.parse(readFileSync(path.join(dir, 'data/ranking.json'), 'utf8'));
+await scenario('F32 ranking: no official tracker in race.json → nothing', async () => {
+    const dir = folder();
+    const r = await runRanking(dir, { RANKING_FILE: RANKING });
+    assert.equal(r.code, 0, r.out);
+    assert.ok(!existsSync(path.join(dir, 'data/ranking.json')));
+});
+await scenario('F33 ranking: a new official report → ranking.json (8 of 49 in Class40); the same report again → untouched', async () => {
+    const dir = withOfficial(folder());
+    let r = await runRanking(dir, { RANKING_FILE: RANKING, RANKING_VERSION: '20261102140439' });
+    assert.equal(r.code, 0, r.out);
+    const got = rankingOf(dir);
+    assert.deepEqual([got.rank, got.of, got.class, got.report, got.leader], [8, 49, 'Class40', '2026-11-02T14:00:00.000Z', 'Sogestran - Seafrigo']);
+    assert.ok(await checkData(dir), 'the data check accepts it');
+    const before = readFileSync(path.join(dir, 'data/ranking.json'), 'utf8');
+    r = await runRanking(dir, { RANKING_FILE: path.join(dir, 'missing.json'), RANKING_VERSION: '20261102140439' });
+    assert.equal(r.code, 0, r.out);
+    assert.match(r.out, /no new official report/);
+    assert.equal(readFileSync(path.join(dir, 'data/ranking.json'), 'utf8'), before, 'the map isn\'t even opened');
+});
+await scenario('F34 ranking that makes no sense (rank 0, or above the class size): the step fails, ranking.json untouched', async () => {
+    const dir = withOfficial(folder());
+    await runRanking(dir, { RANKING_FILE: RANKING, RANKING_VERSION: '1' });
+    const before = readFileSync(path.join(dir, 'data/ranking.json'), 'utf8');
+    for (const bad of [{ rank: 0, of: 49 }, { rank: 50, of: 49 }, { error: 'boat 59 isn\'t in the report' }]) {
+        const r = await runRanking(dir, { RANKING_FILE: officialFile({ class: 'Class40', ...bad }), RANKING_VERSION: String(Math.random()) });
+        assert.notEqual(r.code, 0, JSON.stringify(bad));
+        assert.equal(readFileSync(path.join(dir, 'data/ranking.json'), 'utf8'), before);
+    }
+});
+
 server.close();
 const bad = results.filter(r => r[0] === '✗');
 for (const r of results) {console.log(r.join('  '));}

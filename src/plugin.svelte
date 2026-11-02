@@ -674,15 +674,16 @@
             const b = boat.getBoundingClientRect();
             let dx = 0;
             let n = 0;
-            document.querySelectorAll('.ww-marker').forEach(m => {
-                const r = m.getBoundingClientRect();
-                if (Math.hypot(r.left - b.left, r.top - b.top) > 30) {return;} // Windy's forecast is somewhere else
-                m.querySelectorAll('.ww-marker__arrow > div').forEach(d => {
-                    const q = d.getBoundingClientRect();
-                    if (!q.width) {return;}
-                    dx += (q.left + q.right) / 2 - r.left;
-                    n++;
-                });
+            // measured from the boat itself: Windy's marker box sits 100 px left of its point (windy.com, 2 Nov), so only
+            // the arrows count; they reach about 30–170 px out from the point, so arrows farther off belong elsewhere
+            document.querySelectorAll('.ww-marker .ww-marker__arrow > div').forEach(d => {
+                const q = d.getBoundingClientRect();
+                if (!q.width) {return;}
+                const x = (q.left + q.right) / 2 - b.left;
+                const y = (q.top + q.bottom) / 2 - b.top;
+                if (Math.hypot(x, y) > 220) {return;} // Windy's forecast is somewhere else
+                dx += x;
+                n++;
             });
             map.getContainer().classList.toggle('rt-tagleft', n > 0 && dx / n > 8);
         } catch {

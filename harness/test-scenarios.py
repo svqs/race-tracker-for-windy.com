@@ -322,9 +322,9 @@ with sync_playwright() as p:
     check('S21 rank: tapping it opens the race tracker in a new window', bool(rk) and rk[0] == 'https://carto.routedurhum.com/en/index.html' and rk[1] == '_blank' and 'noopener' in rk[2], rk)
     # Windy's Wind-tab marker at the boat (white circle + one arrow per model): the circle is hidden, the tag goes where the arrows don't
     ARROWS = """(dir) => { document.querySelector('#fake-ww')?.remove(); const b = document.querySelector('.rt-boat').getBoundingClientRect();
-        const m = document.createElement('div'); m.id = 'fake-ww'; m.className = 'ww-marker'; m.style.cssText = `position:fixed;left:${b.left}px;top:${b.top}px;width:0;height:0`;
-        m.innerHTML = '<div class="ww-marker__circle" style="position:absolute;width:200px;height:200px;left:-100px;top:-100px;border:1px solid #fff;border-radius:50%"></div>'
-            + '<div class="ww-marker__arrow" style="position:absolute;left:0;top:0"><div style="position:absolute;top:-4px;height:8px;width:70px;' + (dir > 0 ? 'left:100px' : 'left:-170px') + ';background:orange"></div></div>';
+        const m = document.createElement('div'); m.id = 'fake-ww'; m.className = 'ww-marker'; m.style.cssText = `position:fixed;left:${b.left - 100}px;top:${b.top}px;width:0;height:0`;
+        m.innerHTML = '<div class="ww-marker__circle" style="position:absolute;width:200px;height:200px;left:0;top:-100px;border:1px solid #fff;border-radius:50%"></div>'
+            + '<div class="ww-marker__arrow" style="position:absolute;left:0;top:0"><div style="position:absolute;top:-4px;height:8px;width:70px;' + (dir > 0 ? 'left:135px' : 'left:-5px') + ';background:orange"></div></div>';
         document.body.appendChild(m); }"""
     SIDE = "(() => { const t = document.querySelector('.rt-tagline').getBoundingClientRect(), h = document.querySelector('.rt-hull').getBoundingClientRect(); return t.right < h.left ? 'left' : t.left > h.right ? 'right' : 'over'; })()"
     check('S21 boat: with no Windy wind marker at the boat, the tag is on its right', pg.evaluate(SIDE) == 'right', pg.evaluate(SIDE))

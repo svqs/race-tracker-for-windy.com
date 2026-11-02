@@ -16,7 +16,8 @@ lists every test scenario and the checks to do by hand in real Windy.
   edge, turned to its course, in a live blue ring with a soft pulse; the ring turns grey when the tracker is quiet or the race
   is over; owner's pick, 2 Nov). It shrinks as the map zooms out: 20, 16, 13 px wide (zoom 7+, 5–6, below 5; a class
   rt-zmid / rt-zfar on the map container), and phones draw it one step smaller (16, 13, 11), then a black tag (on the boat's right;
-  on its left when Windy's wind arrows at the boat point right, so it never covers them; `tagSide()` checks every second): the
+  on its left when Windy's wind arrows at the boat point right, so it never covers them; `tagSide()` checks every second,
+  measuring the arrows from the boat: Windy's marker box sits 100 px left of its point): the
   athlete's photo, the name, the speed, the rank, the flag, start and finish, and a dotted great-circle line to the finish.
   Tapping the boat or its tag: desktop shows Find Milan's page, pans the boat to the middle (same zoom) and opens
   Windy's point forecast there on its Wind tab; phones open the forecast. There is no card on the map (owner's decision).

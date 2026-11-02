@@ -12,9 +12,13 @@ export const THEME = {
     // highlights follow Windy's CSS guide: @color-orange (#d49500) for UI elements, @color-orange-light for icons on dark
     // the boat on the map: a live blue ring, pulse and heading beam (like Google Maps); grey when the tracker is quiet or it's over
     boatLive: '#3b8bff', boatStale: '#9aa0a6',
+    // the boat itself: a black Class40 hull with a white edge (owner's pick, 2 Nov); desktop 20 x 40 px, phones 16 x 32
+    hullFill: '#141414', hullEdge: '#ffffff', hullDeck: '#5a5f66',
     // the tag next to the boat (flag, name, speed): black (owner, 30 Oct)
     boatBg: '#141414', boatText: '#f8f8f8', highlight: '#d49500', highlightLight: '#ffe3a1',
     pickBg: '#2e2e2e', pickText: '#f8f8f8',
+    // the rank (organisers' tracker): a soft orange pill next to the name, light orange in the map tag (owner, 2 Nov)
+    rankText: '#ffd27a', rankBg: 'rgba(212, 149, 0, 0.18)', rankLine: 'rgba(212, 149, 0, 0.6)',
     // the card on the map
     popupBg: '#f8f8f8', popupText: '#1c1c1c', popupSub: '#6b6b6b', popupBtnBg: '#ececea', popupBtnText: '#1c1c1c', popupLink: '#b07a00',
     // panel and actions

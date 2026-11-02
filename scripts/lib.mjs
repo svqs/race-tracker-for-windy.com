@@ -10,7 +10,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const root = fileURLToPath(new URL('../', import.meta.url));
 export async function loadLib() {
     const entry = path.join(mkdtempSync(path.join(tmpdir(), 'racetrack-lib-')), 'entry.ts');
-    writeFileSync(entry, ['data', 'race', 'geo', 'units', 'source', 'layers'].map(m => `export * from ${JSON.stringify(path.join(root, 'src/lib', m))};`).join('\n'));
+    writeFileSync(entry, ['data', 'race', 'geo', 'units', 'source', 'layers', 'copy'].map(m => `export * from ${JSON.stringify(path.join(root, 'src/lib', m))};`).join('\n'));
     const bundle = await rollup({ input: entry, plugins: [resolve({ extensions: ['.ts', '.js'] }), rollupSwc({ include: ['**/*.ts'], sourceMaps: false, tsconfig: path.join(root, 'tsconfig.json') })] });
     const out = entry.replace(/\.ts$/, '.mjs');
     await bundle.write({ file: out, format: 'es' });

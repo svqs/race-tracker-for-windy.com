@@ -18,7 +18,7 @@ export interface RaceView {
     /** where the dotted line to the finish starts (default: the boat, or the start) */
     courseFrom?: { lat: number; lon: number };
     /** null until there's a position */
-    boat: { p: TrackPoint; course: number | null; label: string; quiet: boolean; photo: string } | null;
+    boat: { p: TrackPoint; course: number | null; label: string; quiet: boolean; photo: string; rank?: string; small?: boolean } | null;
     /** a position picked in the track list */
     picked: { p: TrackPoint; label: string } | null;
     showCourse: boolean;
@@ -26,18 +26,24 @@ export interface RaceView {
 }
 
 /**
- * The heading, like Google Maps: a soft beam fanning out from the photo the way the boat is going (it fades out,
- * no arrow). It takes the ring's colour: live blue while the boat is sending positions, grey when it isn't.
+ * The boat: a black Class40 seen from above (wide scow bow, beam carried aft, flat stern) with a white edge so it shows
+ * on dark layers too, turned the way it's sailing (owner's pick "C", 2 Nov). Drawn bow up in a 24 x 48 box.
  */
-const BEAM = '<svg width="112" height="112" viewBox="0 0 112 112" aria-hidden="true"><defs><radialGradient id="rt-beam-g" cx="56" cy="56" r="54" gradientUnits="userSpaceOnUse">'
-    + '<stop offset="0.3" stop-color="currentColor" stop-opacity="0.85"/><stop offset="0.7" stop-color="currentColor" stop-opacity="0.4"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></radialGradient></defs>'
-    + '<path d="M56 56 L25 11.8 A54 54 0 0 1 87 11.8 Z" fill="url(#rt-beam-g)"/></svg>';
+const HULL = '<svg viewBox="0 0 24 48" aria-hidden="true">'
+    + '<path d="M12 2.5C16.6 2.5 20.4 8.6 21.2 16.5L21.4 44.5Q21.4 45.5 20.4 45.5L3.6 45.5Q2.6 45.5 2.6 44.5L2.8 16.5C3.6 8.6 7.4 2.5 12 2.5Z" fill="var(--rt-hullFill, #141414)" stroke="var(--rt-hullEdge, #fff)" stroke-width="1.6"/>'
+    + '<path d="M12 6.5C15.2 6.5 17.8 11 18.3 17L18.4 41.5L5.6 41.5L5.7 17C6.2 11 8.8 6.5 12 6.5Z" fill="none" stroke="var(--rt-hullDeck, #5a5f66)" stroke-width="1"/>'
+    + '<circle cx="12" cy="19" r="1.6" fill="var(--rt-hullEdge, #fff)"/></svg>';
 
-/** The boat on the map: the athlete's photo in a live ring, the heading as a beam, the name with the flag and the speed */
-export function boatHtml(o: { name: string; fullName?: string; photo: string; flag: string; label: string; course: number | null; quiet: boolean }): string {
-    const beam = o.course === null ? '' : `<i class="rt-beam" style="transform:rotate(${Math.round(o.course)}deg)">${BEAM}</i>`;
-    return `<div class="rt-boat${o.quiet ? ' quiet' : ''}">${beam}<span class="rt-pulse"></span>${avatarHtml(o.fullName || o.name, o.photo, 'map')}`
-        + `<span class="rt-tagline">${flagHtml(o.flag, 10)}<b>${escapeHtml(o.name)}</b>${o.label ? `<em>${escapeHtml(o.label)}</em>` : ''}</span></div>`;
+/**
+ * The boat on the map: the hull in a live blue ring (grey when the tracker is quiet or it's over), then a black tag:
+ * the athlete's photo, the name, the speed, the rank and the flag (owner, 2 Nov). Phones draw it a little smaller.
+ */
+export function boatHtml(o: { name: string; fullName?: string; photo: string; flag: string; label: string; course: number | null; quiet: boolean; rank?: string; small?: boolean }): string {
+    const turn = o.course === null ? 0 : Math.round(o.course);
+    return `<div class="rt-boat${o.quiet ? ' quiet' : ''}${o.small ? ' small' : ''}"><span class="rt-pulse"></span><span class="rt-ring"></span>`
+        + `<i class="rt-hull" style="transform:rotate(${turn}deg)">${HULL}</i>`
+        + `<span class="rt-tagline">${avatarHtml(o.fullName || o.name, o.photo, 'map')}<b>${escapeHtml(o.name)}</b>${o.label ? `<em>${escapeHtml(o.label)}</em>` : ''}`
+        + `${o.rank ? `<i class="rt-rank">${escapeHtml(o.rank)}</i>` : ''}${flagHtml(o.flag, 10)}</span></div>`;
 }
 
 export function createRaceLayer(host: RaceHost) {
@@ -64,7 +70,7 @@ export function createRaceLayer(host: RaceHost) {
                 layers.push(host.point(race.start.lat, race.start.lon, `<div class="rt-dot start"></div><div class="rt-route-label">${escapeHtml(race.start.name)}</div>`));
                 layers.push(host.point(race.finish.lat, race.finish.lon, `<div class="rt-dot end"></div><div class="rt-route-label">${escapeHtml(race.finish.name)}</div>`));
                 if (v.boat) {
-                    layers.push(host.point(v.boat.p.lat, v.boat.p.lon, boatHtml({ name: race.athlete.short, fullName: race.athlete.name, photo: v.boat.photo, flag: race.athlete.flag, label: v.boat.label, course: v.boat.course, quiet: v.boat.quiet }), { click: v.onBoat, front: true }));
+                    layers.push(host.point(v.boat.p.lat, v.boat.p.lon, boatHtml({ name: race.athlete.short, fullName: race.athlete.name, photo: v.boat.photo, flag: race.athlete.flag, label: v.boat.label, course: v.boat.course, quiet: v.boat.quiet, rank: v.boat.rank, small: v.boat.small }), { click: v.onBoat, front: true }));
                 }
             } catch (error) {
                 console.info('[racetrack] could not draw the race', error);

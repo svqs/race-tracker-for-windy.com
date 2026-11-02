@@ -54,6 +54,7 @@ The plugin fetches two files from GitHub every 5 minutes. These scenarios feed i
 | D24 | Finished / retired | No live speed; the race time |
 | D26 | Before the start, a position in the harbour | The boat shows there; no track, nothing sailed; grey after 3 h without a position |
 | D27 | `videos` | Every kind of YouTube link read, others dropped; Shorts upright; newest first |
+| D29 | `ranking.json` and race.json `official` | Rank read when it makes sense (whole numbers, 1 to the class size, racing); anything else none; only an https tracker link; 1st 2nd 3rd 11th 21st |
 | D28 | `videos.json` (found by the Action) with race.json's videos | One list, newest first; race.json wins for the same video; a missing or broken file changes nothing |
 | D25 | `watch` (things to look out for) | Only Windy layers racetrack knows, with a line; a line replaces racetrack's for that layer, a new layer goes first, at most four; `phase` before/racing; the defaults otherwise |
 
@@ -126,6 +127,7 @@ changes the photo behind the panel, `&embed` hides the pills.
 | S14 | `racing&units=metric` | km/h and km from the viewer's Windy settings |
 | S15 | Windy's forecast and layers | No forecast card while it's at the boat; Whole race → it stays open; opened elsewhere + Find Milan → back at the boat on Wind; opened elsewhere → "Back to Milan" → back on Wind; Pressure → Windy's map on pressure, marked; pages keep the layer; a layer picked in Windy is marked; opening again → Wind; before the start Tidal currents; the real race.json's Saint-Malo line |
 | S20 | Windy's forecast never closes Race Tracker | Opening, following a new position and Back to Milan all open the forecast directly, never with rqstOpen (which closes the right-hand pane in Windy) |
+| S21 | Rank, earlier videos, race tracker link | "8th of 49" next to the name and "8th" in the map tag (none without ranking.json, before the start or after); five earlier videos in one sideways row, a mouse wheel scrolls it; the quiet link last on Find Milan, new window; phones 320/390: the whole name still shows |
 | S16 | Scrolling | The top card stays at the top; nothing (Windy's forecast included) draws over it |
 | S17 | The Follow page | Milan ×2, Windy.com ×2, the race website; every link https, new tab, noopener; no second header |
 | S19 | The video card (`&video=wide`, `short`, `both`, `auto`) | No video: no card; right under the conditions; first the thumbnail and a play button (no YouTube player, so no YouTube title bar), play starts it; the title under it regular, not bold; wide 16:9 and Shorts upright, privacy-enhanced YouTube; the earlier one listed and playable; the player goes when leaving the page; found by the Action (videos.json) shows too; on a phone a link "Watch video updates from the boat" to the newest video on YouTube (in the playlist; a Short as a Short), no player |

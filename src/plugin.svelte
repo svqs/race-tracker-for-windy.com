@@ -120,9 +120,9 @@
                 </div>
                 {#if video.title || video.date}<div class="vmeta">{#if video.title}<span class="vt">{ video.title }</span>{/if}{#if video.date}<small>{ dayTime(video.date) }</small>{/if}</div>{/if}
                 {#if earlier.length}
-                    <!-- the three before it: a tap plays it here instead -->
-                    <div class="vlist">
-                        <small class="vh">{ W.videoEarlier }</small>
+                    <!-- the ones before it, in one row that scrolls sideways inside the card (owner, 2 Nov): a tap plays it here instead -->
+                    <small class="vh">{ W.videoEarlier }</small>
+                    <div class="vlist" on:wheel={ sideways }>
                         {#each earlier as v (v.id)}
                             <button class="vitem" aria-label={ fill(W.videoPlay, { title: v.title || fill(W.videoUntitled, { short: race.athlete.short }) }) } on:click={ () => { videoId = v.id; playing = v.id; } }>
                                 <img src={ `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg` } alt="" loading="lazy" referrerpolicy="no-referrer" on:error={ hideImg } />
@@ -184,6 +184,10 @@
                 <b>{ W.waitTitle }</b>
                 <p class="p muted">{ fill(W.waitText, { short: race.athlete.short }) }</p>
             </div>
+        {/if}
+        {#if race.officialUrl}
+            <!-- the whole fleet on the organisers' tracker: a quiet line at the very end, opens a new window (owner, 2 Nov) -->
+            <a class="fleet" href={ race.officialUrl } target="_blank" rel="noopener noreferrer">{ race.officialName ? fill(W.fleetLink, { name: race.officialName }) : W.fleetLinkNoName }</a>
         {/if}
 
     {:else if tab === 'track'}
@@ -264,7 +268,7 @@
     import config from './pluginConfig';
     import { LOGO_FONT_CSS } from './lib/logo-font';
     import { themeCss } from './lib/theme';
-    import { words, fill, rich, t as tr } from './lib/copy';
+    import { words, fill, rich, nth, t as tr } from './lib/copy';
     import { defaultDataUrl, loadRace, lastLoaded } from './lib/source';
     import { trackUrl } from './lib/data';
     import { raceState, motion, thinned, fmtDuration } from './lib/race';
@@ -408,7 +412,16 @@
     /** a thumbnail that doesn't load: nothing (not the browser's broken-picture mark) */
     const hideImg = (e: Event) => { (e.currentTarget as HTMLElement).style.visibility = 'hidden'; };
     $: video = race?.videos.find(v => v.id === videoId) ?? race?.videos[0] ?? null;
-    $: earlier = race && video ? race.videos.filter(v => v.id !== video?.id).slice(0, 3) : [];
+    $: earlier = race && video ? race.videos.filter(v => v.id !== video?.id) : [];
+    /** a mouse wheel scrolls the row of earlier videos sideways, until its end (then the page scrolls on) */
+    function sideways(e: WheelEvent) {
+        const el = e.currentTarget as HTMLElement;
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || el.scrollWidth <= el.clientWidth) {return;}
+        const max = el.scrollWidth - el.clientWidth;
+        if ((e.deltaY > 0 && el.scrollLeft >= max - 1) || (e.deltaY < 0 && el.scrollLeft <= 0)) {return;}
+        e.preventDefault();
+        el.scrollLeft += e.deltaY;
+    }
 
     // the race's positions only: from the start, like the official tracker (nothing earlier)
     $: racePts = race && track ? track.points.filter(p => p.t >= race.start.time) : [];
@@ -581,7 +594,7 @@
         return {
             race, points: pts, picked: picked ? { p: picked, label: dayTime(picked.t) } : null,
             // before the start: where the boat is now (no speed, no track), grey once it's been 3 hours without a position
-            boat: st.last ? { p: st.last, course: st.course, label: st.phase === 'racing' ? `${fmtSpeed(st.speed, S.wind)} ${windLabel(speedUnit(S.wind))}` : '', quiet: st.quiet || (st.phase !== 'racing' && st.phase !== 'before'), photo } : null,
+            boat: st.last ? { p: st.last, course: st.course, label: st.phase === 'racing' ? `${fmtSpeed(st.speed, S.wind)} ${windLabel(speedUnit(S.wind))}` : '', quiet: st.quiet || (st.phase !== 'racing' && st.phase !== 'before'), photo, rank: st.phase === 'racing' && race.ranking ? nth(race.ranking.rank) : '', small: isMobile } : null,
             courseFrom: st.phase === 'before' ? race.start : undefined,
             showCourse: st.phase === 'before' || st.phase === 'racing',
             onBoat: () => boatTapped(),
@@ -860,8 +873,14 @@
         autoForecast();
     };
 
+    /** a photo that doesn't load (on the map too): removed, so the initials show instead of the browser's broken picture */
+    const onPhotoError = (e: Event) => {
+        const el = e.target as HTMLElement | null;
+        if (el && el.tagName === 'IMG' && el.parentElement?.classList.contains('rt-ava')) {el.remove();}
+    };
     onMount(() => {
         setTimeout(() => {if (!destroyed) {paintPane();}}, 120);
+        document.addEventListener('error', onPhotoError, true);
         const add = (id: string, css: string) => {
             if (document.getElementById(id)) {return;}
             const el = document.createElement('style');
@@ -899,6 +918,7 @@
         clearInterval(timer);
         clearInterval(tickTimer);
         document.removeEventListener('visibilitychange', onVisible);
+        document.removeEventListener('error', onPhotoError, true);
         window.removeEventListener('error', onWinError);
         window.removeEventListener('unhandledrejection', onRejection);
         errBox?.remove();

@@ -345,6 +345,12 @@
         short: [{ url: 'https://www.youtube.com/shorts/jNQXAC9IVRw', title: 'Sample: an upright video (a Short)', date: new Date(Date.now() - 2 * 3600e3).toISOString() }],
     };
     VIDEOS.both = [...VIDEOS.short, ...VIDEOS.wide];
+    // ?video=many: a wide video and five before it (the earlier ones scroll sideways)
+    VIDEOS.many = ['aqz-KE-bpKQ', 'jNQXAC9IVRw', 'M7lc1UVf-VE', 'ScMzIvxBSi4', 'dQw4w9WgXcQ', 'kJQP7kiw5Fk'].map((id, i) => ({
+        url: `https://www.youtube.com/watch?v=${id}`, title: ['Day 2: first night in the Atlantic', 'Day 1: out of the Channel', 'Leaving Saint-Malo before sunrise', 'Start weather briefing', 'Last checks in the harbour', 'Meet the boat'][i],
+        date: new Date(Date.now() - (2 + i * 9) * 3600e3).toISOString() }));
+    // data/ranking.json (the organisers' tracker, read by the Action): ?rank=none: not there; otherwise 8th of 49
+    const rankQ = new URLSearchParams(location.search).get('rank') || '';
     const COVER = coverN >= 1 && coverN <= 4 ? COVERS[coverN - 1] : '';
     const store_ = (k, v) => { try { return v === undefined ? sessionStorage.getItem(k) : sessionStorage.setItem(k, v); } catch { return null; } };
     function makeRace() {
@@ -368,6 +374,7 @@
             about: 'The first Czech skipper ever at the Route du Rhum: solo and non-stop across the Atlantic, from Saint-Malo to Guadeloupe. (Sample data for testing.)',
             follow: [{ name: 'Windy.com', links: [{ label: 'Instagram', url: 'https://www.instagram.com/windy_forecast/' }, { label: 'Facebook', url: 'https://www.facebook.com/windyforecast' }] }],
             videos: videoQ === 'auto' ? [] : VIDEOS[videoQ] || [],
+            official: { name: 'Route du Rhum', url: 'https://carto.routedurhum.com/en/index.html', boat: '59' },
             youtube: { playlist: 'PLsample12345' },
             source: 'made-up positions for this sandbox',
             track: 'track.json',
@@ -412,6 +419,7 @@
         if (store_('racetrack-mock-offline') || scenario === 'cached' || (scenario === 'offline' && !window.__mockOnline)) throw new TypeError('Failed to fetch (offline)');
         // data/videos.json (what the update-track Action finds on YouTube): only with ?video=auto, otherwise not there yet
         if (/videos\.json/.test(u)) return videoQ === 'auto' ? new Response(JSON.stringify({ updated: new Date().toISOString(), videos: VIDEOS.wide }), { status: 200, headers: { 'content-type': 'application/json' } }) : new Response('Not Found', { status: 404 });
+        if (/ranking\.json/.test(u)) return rankQ === 'none' ? new Response('Not Found', { status: 404 }) : new Response(JSON.stringify({ rank: Number(rankQ) || 8, of: 49, class: 'Class40', status: 'RAC', report: new Date().toISOString() }), { status: 200, headers: { 'content-type': 'application/json' } });
         const isTrack = /track\.json/.test(u);
         window.__mockFetches = (window.__mockFetches || 0) + 1;
         if (isTrack && scenario === 'broken') return new Response('{"points": [ {"t": "2026-11-0', { status: 200, headers: { 'content-type': 'application/json' } });

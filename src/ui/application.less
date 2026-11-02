@@ -176,12 +176,22 @@
         .pbtn.small { position: absolute; left: 50%; top: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 15px; background: rgba(20, 20, 20, 0.72); display: flex; align-items: center; justify-content: center; }
         .grow { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; b { font-size: 14px; } small { color: var(--rt-uSub, @sub); font-size: 12px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } }
         .go { flex: none; color: var(--rt-uSub, @sub); font-size: 15px; } }
-    .vlist { display: flex; flex-direction: column; margin-top: 2px; .vh { color: var(--rt-uSub, @sub); font-size: 12px; padding-bottom: 2px; } }
-    .vitem { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 6px; margin: 0 -6px; box-sizing: content-box; border: 0; border-top: 1px solid @line;
-        background: transparent; text-align: left; color: @text !important; cursor: pointer;
-        &:hover { background: rgba(255, 255, 255, 0.04); }
-        img { width: 96px; height: 54px; object-fit: cover; border-radius: 8px; flex: none; background: #000; }
-        .grow { display: flex; flex-direction: column; gap: 2px; min-width: 0; b { font-size: 13.5px; font-weight: 400; line-height: 1.35; } small { color: var(--rt-uSub, @sub); } } }
+    /* earlier videos: one row of thumbnails that scrolls sideways inside the card (owner, 2 Nov), so the card never grows */
+    .vh { color: var(--rt-uSub, @sub); font-size: 12px; margin-top: 2px; }
+    .vlist { display: flex; gap: 10px; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x proximity; padding-bottom: 6px; margin-top: -4px;
+        scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+        &::-webkit-scrollbar { height: 6px; } &::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.28); border-radius: 3px; } }
+    .vitem { flex: 0 0 132px; display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 0; margin: 0; border: 0; border-radius: 8px;
+        background: transparent; text-align: left; color: @text !important; cursor: pointer; scroll-snap-align: start;
+        img { width: 132px; height: 74px; object-fit: cover; border-radius: 8px; display: block; background: #000; transition: opacity 0.15s; }
+        &:hover img { opacity: 0.85; }
+        .grow { display: flex; flex-direction: column; gap: 2px; min-width: 0;
+            b { font-size: 12.5px; font-weight: 400; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+            small { color: var(--rt-uSub, @sub); font-size: 11.5px; } } }
+    /* the whole fleet on the organisers' tracker: a quiet line at the end of Find Milan's page (owner, 2 Nov) */
+    .fleet { display: block; align-self: center; text-align: center; padding: 2px 8px 4px; color: #fff !important; font-size: 13px; text-decoration: underline;
+        text-underline-offset: 3px; text-decoration-color: rgba(255, 255, 255, 0.5); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+        &:hover { text-decoration-color: #fff; } }
     /* Things to look out for: Windy layers, one line each; a tap switches the map (the one on the map in Windy orange) */
     .watch { gap: 4px; padding-bottom: 6px;
         .wlist { display: flex; flex-direction: column; }
@@ -250,17 +260,22 @@
 
     /* ---------- on the map ---------- */
     :global(.rt-marker) { background: none; border: 0; }
-    /* the boat: the athlete's photo in a ring (the heading is a little arrow on the ring), then the name, flag and speed */
-    :global(.rt-boat) { position: absolute; left: 0; top: 0; width: 0; height: 0; cursor: pointer; }
-    :global(.rt-boat .rt-ava.map) { position: absolute; left: -18px; top: -18px; width: 36px; height: 36px; font-size: 12px; box-shadow: 0 0 0 2.5px #fff, 0 0 0 5px var(--rt-boatLive, #3b8bff), 0 3px 10px rgba(0, 0, 0, 0.45); }
-    :global(.rt-boat.quiet .rt-ava.map) { box-shadow: 0 0 0 2.5px #fff, 0 0 0 5px var(--rt-boatStale, #9aa0a6), 0 3px 10px rgba(0, 0, 0, 0.45); }
-    :global(.rt-beam) { position: absolute; left: -56px; top: -56px; width: 112px; height: 112px; display: flex; color: var(--rt-boatLive, #3b8bff); transform-origin: 56px 56px; pointer-events: none; }
-    :global(.rt-boat.quiet .rt-beam) { color: var(--rt-boatStale, #9aa0a6); }
-    :global(.rt-tagline) { position: absolute; left: 26px; top: -12px; display: flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px; border-radius: 12px; white-space: nowrap;
+    /* the boat: a black Class40 turned the way it's sailing, in a live blue ring; then the tag (photo, name, speed, rank, flag) */
+    :global(.rt-boat) { position: absolute; left: 0; top: 0; width: 0; height: 0; cursor: pointer; --rt-hw: 20px; --rt-ring: 38px; }
+    :global(.rt-boat.small) { --rt-hw: 16px; --rt-ring: 30px; }
+    :global(.rt-hull) { position: absolute; left: calc(var(--rt-hw) / -2); top: calc(var(--rt-hw) * -1); width: var(--rt-hw); height: calc(var(--rt-hw) * 2); display: block;
+        transform-origin: 50% 50%; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45)); svg { display: block; width: 100%; height: 100%; overflow: visible; } }
+    :global(.rt-ring) { position: absolute; left: calc(var(--rt-ring) / -2); top: calc(var(--rt-ring) / -2); width: var(--rt-ring); height: var(--rt-ring); border-radius: 50%;
+        border: 2px solid var(--rt-boatLive, #3b8bff); box-sizing: border-box; opacity: 0.6; pointer-events: none; }
+    :global(.rt-boat.quiet .rt-ring) { border-color: var(--rt-boatStale, #9aa0a6); }
+    :global(.rt-boat .rt-ava.map) { width: 20px; height: 20px; font-size: 8px; margin-left: -6px; }
+    :global(.rt-boat.small .rt-ava.map) { width: 18px; height: 18px; }
+    :global(.rt-tagline) { position: absolute; left: calc(var(--rt-ring) / 2 + 4px); top: -12px; display: flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 9px; border-radius: 12px; white-space: nowrap;
         background: var(--rt-boatBg, #141414); color: var(--rt-boatText, #f8f8f8); font-family: inherit; font-weight: 600; font-size: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
     :global(.rt-tagline b) { font-weight: 600; }
     :global(.rt-tagline em) { font-style: normal; font-weight: 600; font-size: 11px; opacity: 0.6; }
-    :global(.rt-pulse) { position: absolute; left: -26px; top: -26px; width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--rt-boatLive, #3b8bff); opacity: 0; animation: rt-pulse 2.4s ease-out infinite; pointer-events: none; }
+    :global(.rt-tagline .rt-rank) { font-style: normal; font-weight: 600; font-size: 11px; color: var(--rt-rankText, #ffd27a); }
+    :global(.rt-pulse) { position: absolute; left: calc(var(--rt-ring) / -2); top: calc(var(--rt-ring) / -2); width: var(--rt-ring); height: var(--rt-ring); box-sizing: border-box; border-radius: 50%; border: 2px solid var(--rt-boatLive, #3b8bff); opacity: 0; animation: rt-pulse 2.4s ease-out infinite; pointer-events: none; }
     :global(.rt-boat.quiet .rt-pulse) { display: none; }
     @keyframes -global-rt-pulse { 0% { transform: scale(0.6); opacity: 0.9; } 100% { transform: scale(1.35); opacity: 0; } }
     @media (prefers-reduced-motion: reduce) { :global(.rt-pulse) { animation: none; } }

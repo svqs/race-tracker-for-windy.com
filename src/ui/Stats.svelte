@@ -2,7 +2,7 @@
 <div class="who">
     {@html avatarHtml(race.athlete.name, photo, 'panel')}
     <span class="who-t">
-        <b class="name"><span class="nm">{ race.athlete.name }</span>{@html flagHtml(race.athlete.flag, 13)}</b>
+        <b class="name"><span class="nm">{ race.athlete.name }</span>{@html flagHtml(race.athlete.flag, 13)}{#if rank}<span class="rank" title={ fill($words.rankTitle, rank) }>{ fill($words.rank, rank) }</span>{/if}</b>
         <small>{ [race.athlete.boat, race.athlete.boatName, race.race.short].filter(Boolean).join(' · ') }</small>
     </span>
 </div>
@@ -23,7 +23,7 @@
 </div>
 
 <script lang="ts">
-    import { words } from '../lib/copy';
+    import { words, fill, nth } from '../lib/copy';
     import { avatarHtml, flagHtml } from '../lib/athlete';
     import { fmtDist, distLabel, fmtSpeed, windLabel, speedUnit } from '../lib/units';
     import type { RaceInfo, Settings } from '../lib/types';
@@ -36,6 +36,9 @@
     export let countdown = '';
     export let startClock = '';
 
+    /** the rank in the class, only while racing (the organisers' report, data/ranking.json) */
+    $: rank = race.ranking && st.phase === 'racing' ? { nth: nth(race.ranking.rank), of: race.ranking.of, class: race.ranking.class || race.athlete.boat } : null;
+
     /** "4 d 6 h" or, in the first day, "14 h" */
     function days(ms: number): string {
         const h = Math.floor(ms / 3600e3);
@@ -46,8 +49,10 @@
 <style lang="less">
     .who { display: flex; align-items: center; gap: 12px; min-width: 0; }
     .who-t { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .name { display: flex; align-items: center; gap: 8px; font-size: var(--rt-titleSize, 17px); font-weight: 600; min-width: 0;
+    .name { display: flex; flex-wrap: wrap; row-gap: 4px; align-items: center; gap: 8px; font-size: var(--rt-titleSize, 17px); font-weight: 600; min-width: 0;
         .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } }
+    .rank { flex: none; padding: 3px 8px; border-radius: 9px; background: var(--rt-rankBg); border: 1px solid var(--rt-rankLine); color: var(--rt-rankText);
+        font-size: 11.5px; font-weight: 600; line-height: 1; white-space: nowrap; font-variant-numeric: tabular-nums; }
     small { color: var(--rt-uSub, #b0b0b0); font-size: 12px; }
     .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; } }
     .lbl { font-size: 12px; color: var(--rt-uSub, #b0b0b0); white-space: nowrap; }

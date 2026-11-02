@@ -5,7 +5,7 @@
  * To follow someone else in another race, change data/race.json in the repository (and empty data/track.json).
  * DATA_URL only changes if the repository moves.
  */
-import { readRace, readTrack, trackUrl, withVideos } from './data';
+import { readRace, readTrack, trackUrl, withRanking, withVideos } from './data';
 import type { RaceInfo, RaceTrack } from './types';
 
 export const DATA_URL = 'https://raw.githubusercontent.com/svqs/Race-Tracker-for-Windy.com/main/data/race.json';
@@ -40,6 +40,8 @@ export async function loadRace(url = DATA_URL, signal?: AbortSignal): Promise<Lo
     // the videos the update-track Action found on YouTube (data/videos.json): optional, never a reason to fail; asked
     // for alongside the track so a slow connection doesn't wait twice
     const videosAsked = getJson(trackUrl(url, 'videos.json'), signal).catch(() => null);
+    // the rank in the class from the organisers' tracker (data/ranking.json): optional in the same way
+    const rankingAsked = getJson(trackUrl(url, 'ranking.json'), signal).catch(() => null);
     let rawTrack: unknown = { points: [] };
     try {
         rawTrack = await getJson(trackUrl(url, race.track), signal);
@@ -48,13 +50,14 @@ export async function loadRace(url = DATA_URL, signal?: AbortSignal): Promise<Lo
         if (Date.now() > race.start.time) {throw e;}
     }
     const rawVideos: unknown = await videosAsked;
+    const rawRanking: unknown = await rankingAsked;
     const at = Date.now();
     try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify({ race: rawRace, track: rawTrack, videos: rawVideos, at }));
+        localStorage.setItem(CACHE_KEY, JSON.stringify({ race: rawRace, track: rawTrack, videos: rawVideos, ranking: rawRanking, at }));
     } catch {
         /* storage full or blocked: not needed */
     }
-    return { race: withVideos(race, rawVideos), track: readTrack(rawTrack), at };
+    return { race: withRanking(withVideos(race, rawVideos), rawRanking), track: readTrack(rawTrack), at };
 }
 
 /** The last copy this browser saw, so the plugin shows something straight away (and offline) */
@@ -62,7 +65,7 @@ export function lastLoaded(): Loaded | null {
     try {
         const o = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
         const race = readRace(o?.race);
-        return race ? { race: withVideos(race, o.videos), track: readTrack(o.track), at: typeof o.at === 'number' ? o.at : 0 } : null;
+        return race ? { race: withRanking(withVideos(race, o.videos), o.ranking), track: readTrack(o.track), at: typeof o.at === 'number' ? o.at : 0 } : null;
     } catch {
         return null;
     }

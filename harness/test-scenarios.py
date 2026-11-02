@@ -134,12 +134,12 @@ with sync_playwright() as p:
 
     # S8 live: a new position arrives ------------------------------------------------------------------------------
     ctx, pg = open_page(b, 'scenario=live')
-    before = pg.locator('.rt-boat .rt-ava').bounding_box()
+    before = pg.locator('.rt-boat .rt-hull').bounding_box()
     sent = []
     pg.evaluate("() => { window.__sent = []; const d = W.plugins.detail, o = d.open; d.open = (x) => { window.__sent.push([x.params.lat, x.params.lon]); return o(x); }; }")
     pg.evaluate('window.__racetrackRefresh()')
     pg.wait_for_timeout(2500)
-    after = pg.locator('.rt-boat .rt-ava').bounding_box()
+    after = pg.locator('.rt-boat .rt-hull').bounding_box()
     sent = pg.evaluate('window.__sent')
     check('S8 live: "Last position just now" after the refresh', 'just now' in text(pg, '.status-line'), text(pg, '.status-line'))
     check('S8 live: the boat moved on the map', before and after and (abs(before['x'] - after['x']) + abs(before['y'] - after['y'])) > 1, (before, after))
@@ -187,8 +187,9 @@ with sync_playwright() as p:
 
     # S13 photo doesn't load --------------------------------------------------------------------------------------
     ctx, pg = open_page(b, 'scenario=nophoto')
+    pg.wait_for_timeout(500)
     nat = pg.evaluate("[...document.querySelectorAll('.rt-ava img')].map(i => i.naturalWidth)")
-    check('S13 no photo: the initials are there and the broken photo draws nothing', pg.locator('.who .rt-ava .rt-ini').inner_text() == 'MK' and pg.locator('.rt-boat .rt-ini').inner_text() == 'MK' and all(n == 0 for n in nat), nat)
+    check('S13 no photo: the initials are there and the broken photo draws nothing (removed, also in the tag on the map)', pg.locator('.who .rt-ava .rt-ini').inner_text() == 'MK' and pg.locator('.rt-boat .rt-ini').inner_text() == 'MK' and pg.locator('.rt-boat .rt-ava img').count() == 0 and all(n == 0 for n in nat), nat)
     shot(pg, 'S13-nophoto')
     no_errors(pg, 'S13')
     ctx.close()
@@ -314,6 +315,36 @@ with sync_playwright() as p:
         if q == 'wide': shot(pg, 'S19-video-phone', phone=True)
         ctx.close()
 
+    # S21 the rank, the earlier videos in a sideways row, the link to the race tracker (owner, 2 Nov) ----------------
+    ctx, pg = open_page(b, 'scenario=racing&video=many')
+    check('S21 rank: a pill next to the name, "8th of 49" (ranking.json)', text(pg, '.card.head .who .rank') == '8th of 49', text(pg, '.card.head .who .rank'))
+    check('S21 rank: in the tag on the map too, "8th"', text(pg, '.rt-tagline .rt-rank') == '8th', text(pg, '.rt-tagline .rt-rank'))
+    row = pg.evaluate("(() => { const l = document.querySelector('.vlist'); const r = [...l.querySelectorAll('.vitem')].map(e => e.getBoundingClientRect().top); return [l.querySelectorAll('.vitem').length, Math.max(...r) - Math.min(...r), l.scrollWidth > l.clientWidth, l.getBoundingClientRect().height]; })()")
+    check('S21 videos: all five earlier ones in one row that scrolls sideways (the card stays one row high)', row[0] == 5 and row[1] < 1 and row[2] and row[3] < 170, row)
+    pg.locator('.vlist').hover(); pg.mouse.wheel(0, 200); pg.wait_for_timeout(300)
+    check('S21 videos: a mouse wheel over the row scrolls it sideways', pg.evaluate("document.querySelector('.vlist').scrollLeft") > 0)
+    a_ = pg.evaluate("(() => { const a = document.querySelector('a.fleet'); return a && [a.href, a.target, a.rel, a.innerText.trim(), !!a.nextElementSibling]; })()")
+    check('S21 link: "See the whole fleet on the Route du Rhum tracker", opens the race tracker in a new window, last on the page, no arrow', bool(a_) and a_[0] == 'https://carto.routedurhum.com/en/index.html' and a_[1] == '_blank' and 'noopener' in a_[2] and a_[3] == 'See the whole fleet on the Route du Rhum tracker' and not a_[4], a_)
+    tag = pg.evaluate("[...document.querySelector('.rt-tagline').children].map(e => e.classList.contains('rt-ava') ? 'photo' : e.tagName === 'B' ? 'name' : e.tagName === 'EM' ? 'speed' : e.classList.contains('rt-rank') ? 'rank' : e.classList.contains('rt-flag') || e.tagName === 'svg' || e.tagName === 'SVG' ? 'flag' : e.className)")
+    check('S21 boat: the tag reads photo, name, speed, rank, flag', tag == ['photo', 'name', 'speed', 'rank', 'flag'], tag)
+    hull = pg.evaluate("(() => { const h = document.querySelector('.rt-boat .rt-hull'); const r = h.getBoundingClientRect(); return [h.style.transform, h.offsetWidth, h.offsetHeight, !!document.querySelector('.rt-boat .rt-beam')]; })()")
+    check('S21 boat: a black Class40 (20 x 40) turned to its course, no beam', hull[0].startswith('rotate(') and hull[1] == 20 and hull[2] == 40 and not hull[3], hull)
+    shot(pg, 'S21-rank-videos-link')
+    no_errors(pg, 'S21')
+    ctx.close()
+    for q in ['rank=none', 'scenario=finished', 'scenario=before']:
+        ctx, pg = open_page(b, q if q.startswith('scenario') else 'scenario=racing&' + q)
+        check(f'S21 rank: none shown ({q})', pg.locator('.rank').count() == 0 and pg.locator('.rt-rank').count() == 0)
+        ctx.close()
+    for w in [320, 390]:
+        ctx, pg = open_page(b, 'scenario=racing', w=w, h=760 if w < 390 else 844, phone=True)
+        pg.click('.mact >> nth=0'); pg.wait_for_timeout(700)
+        nm = pg.evaluate("(() => { const n = document.querySelector('.mwrap .who .nm'); return n && [n.scrollWidth, n.clientWidth]; })()")
+        check(f'S21 phone {w}: his whole name shows next to the rank (the pill drops to its own line when narrow)', bool(nm) and nm[0] <= nm[1] and text(pg, '.mwrap .who .rank') == '8th of 49', nm)
+        hw = pg.evaluate("document.querySelector('.rt-boat .rt-hull').offsetWidth")
+        check(f'S21 phone {w}: the boat a little smaller than on desktop (16 x 32)', hw == 16, hw)
+        ctx.close()
+
     # S18 phones ---------------------------------------------------------------------------------------------------
     for w in [320, 390]:
         ctx, pg = open_page(b, 'scenario=racing', w=w, h=760 if w < 390 else 844, phone=True)
@@ -322,7 +353,7 @@ with sync_playwright() as p:
         pg.click('.mact >> nth=0'); pg.wait_for_timeout(900)
         fit = pg.evaluate("(() => { const [b, o] = window.__fits.at(-1) || [[[0, 0], [0, 0]], {}]; return [Math.abs(b[1][1] - b[0][1]), o.maxZoom]; })()")
         check(f'S18 phone {w}: Find Milan stays out (a box over 2° across, at most zoom 7), not into Windy\'s outdoor map', fit[0] >= 2 and fit[1] <= 7, fit)
-        box = pg.locator('.rt-boat .rt-ava').bounding_box()
+        box = pg.locator('.rt-boat .rt-hull').bounding_box()
         top = pg.evaluate("document.querySelector('.mwrap').getBoundingClientRect().top")
         check(f'S18 phone {w}: Find Milan opens the Now page with the boat above it', pg.locator('.mwrap.open').count() == 1 and box and box['y'] + box['height'] < top, (box, top))
         over = pg.evaluate("document.documentElement.scrollWidth > window.innerWidth + 1 || [...document.querySelectorAll('.mwrap *')].some(e => { const r = e.getBoundingClientRect(); return r.width && (r.right > innerWidth + 1 || r.left < -1) && !e.closest('#plugin-detail, .wpf') })")

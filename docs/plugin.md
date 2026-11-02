@@ -88,8 +88,9 @@ panel that rises over the map and moves the map so the boat (or the race) sits a
 it. If a phone cuts the panel off, it falls back to Windy's classic half-screen pane.
 
 **On the map:** the track (black), a dotted great-circle line to the finish, a green start and a blue finish dot, and the boat: the
-athlete's photo in a blue ring with a soft pulse and a Google Maps–style beam showing the course, then flag, name and
-speed. Ring and beam turn grey (no pulse) when there's been no position for 3 hours or the race is over. Tapping the
+a black Class40 seen from above (white edge), turned to its course, in a blue ring with a soft pulse, then a black tag:
+photo, name, speed, rank in the class, flag. The ring turns grey (no pulse) when there's been no position for 3 hours or
+the race is over. Phones draw the boat a little smaller. Tapping the
 boat opens Windy's point forecast there.
 
 **Look:** Windy's dark greys; the boat photo (`athlete.background`) behind the whole panel, fading to grey at the
@@ -147,7 +148,7 @@ Sophia (the owner) is a designer at Windy. From her reviews, 27–29 Oct 2026:
 - "Conditions right now": three numbers only (wind, gusts, waves), small labels, nothing else.
 - The Follow page: Milan's and Windy's Instagram and Facebook and the race website, nothing else.
 - Units come from Windy's settings; no units option.
-- Milan's photo without a ring in the panel; on the map a live blue ring and a Google Maps–style beam.
+- Milan's photo without a ring in the panel; on the map a black Class40 in a live blue ring.
 - The boat photo behind the whole panel (F10, the boat far off on the dark sea), cards as dark glass in Windy greys.
 - The top bar is part of the panel (full width, square corners) and stays at the top while scrolling.
 - Under "Last position", nothing else, even when there are problems.

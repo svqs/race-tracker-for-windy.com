@@ -66,6 +66,9 @@ export function readRace(value: unknown): RaceInfo | null {
         playlist: /^[\w-]{10,64}$/.test(str(rec(o.youtube)?.playlist, 80)) ? str(rec(o.youtube)?.playlist, 80) : '',
         source: str(o.source, 400),
         track: track && !/^(javascript|data):/i.test(track) ? track : 'track.json',
+        officialUrl: safeUrl(rec(o.official)?.url),
+        officialName: str(rec(o.official)?.name, 60),
+        ranking: null,
     };
 }
 
@@ -102,6 +105,19 @@ export function withVideos(race: RaceInfo, raw: unknown): RaceInfo {
     if (!auto.length) {return race;}
     const all = [...race.videos, ...auto.filter(a => !race.videos.some(v => v.id === a.id))].sort((a, b) => (b.date ?? 0) - (a.date ?? 0));
     return { ...race, videos: all.slice(0, 20) };
+}
+
+/**
+ * data/ranking.json (written by the update-track Action from the organisers' tracker): the rank in the class.
+ * Anything odd (no file, a 404 page, rank past the last boat, retired) is no ranking: nothing shows.
+ */
+export function withRanking(race: RaceInfo, raw: unknown): RaceInfo {
+    const o = rec(raw);
+    const rank = Number(o?.rank);
+    const of = Number(o?.of);
+    const status = str(o?.status, 10).toUpperCase();
+    const ok = Number.isInteger(rank) && Number.isInteger(of) && rank >= 1 && rank <= of && of <= 500 && (!status || status === 'RAC');
+    return ok ? { ...race, ranking: { rank, of, class: str(o?.class, 40) } } : race;
 }
 
 /** A photo: a file next to race.json, an https address, or (for the sandbox) a picture written into the file */

@@ -53,6 +53,19 @@ export interface RaceInfo {
     source: string;
     /** the track file next to race.json (or a full https URL) */
     track: string;
+    /** the organisers' own race tracker (race.json official.url): the quiet link to the whole fleet; '' = none */
+    officialUrl: string;
+    /** its name in "See the whole fleet on the … tracker" (race.json official.name) */
+    officialName: string;
+    /** the athlete's rank in their class from the organisers' tracker (data/ranking.json, update-track); null = none yet */
+    ranking: Ranking | null;
+}
+
+/** data/ranking.json: rank in the class in the organisers' latest report (about hourly) */
+export interface Ranking {
+    rank: number;
+    of: number;
+    class: string;
 }
 
 /** One position from the tracker. Speed is stored in m/s like every speed here (the file has knots). */

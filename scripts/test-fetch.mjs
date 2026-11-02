@@ -228,6 +228,18 @@ await scenario('D28 videos found by the Action (videos.json) join race.json\'s o
     assert.equal(L.withVideos(r, null), r, 'no file: race.json\'s only');
     assert.equal(L.withVideos(r, '<html>404</html>'), r, 'nonsense: race.json\'s only');
 });
+await scenario('D29 ranking (ranking.json from the organisers\' tracker): read when it makes sense, otherwise none; the race tracker link', async () => {
+    const r = L.readRace({ ...race, official: { name: 'Route du Rhum', url: 'https://carto.routedurhum.com/en/index.html', boat: '59' } });
+    assert.equal(r.ranking, null, 'none until the file is read');
+    assert.equal(r.officialUrl, 'https://carto.routedurhum.com/en/index.html');
+    assert.equal(r.officialName, 'Route du Rhum');
+    assert.deepEqual(L.withRanking(r, { rank: 8, of: 49, class: 'Class40', status: 'RAC' }).ranking, { rank: 8, of: 49, class: 'Class40' });
+    for (const bad of [null, '<html>404</html>', { rank: 0, of: 49 }, { rank: 50, of: 49 }, { rank: 2.5, of: 49 }, { rank: '8', of: null }, { rank: 8, of: 49, status: 'ABD' }]) {
+        assert.equal(L.withRanking(r, bad).ranking, null, `nothing for ${JSON.stringify(bad)}`);
+    }
+    assert.equal(L.readRace({ ...race, official: { url: 'javascript:alert(1)' } }).officialUrl, '', 'only https links');
+    assert.deepEqual([1, 2, 3, 4, 8, 11, 12, 13, 21, 22, 23, 101, 111].map(L.nth), ['1st', '2nd', '3rd', '4th', '8th', '11th', '12th', '13th', '21st', '22nd', '23rd', '101st', '111th']);
+});
 await scenario('D24 finished / retired: no live speed, the race time', async () => {
     for (const status of ['finished', 'retired']) {
         const st = L.raceState({ ...R, status, endTime: START + 4 * H }, T, NOW);

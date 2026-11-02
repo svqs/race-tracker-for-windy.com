@@ -26,6 +26,8 @@ export const COPY_GROUPS: CopyGroup[] = [
     ] },
     { id: 'head', title: 'The top card', items: [
         ['statSpeed', 'Speed'], ['statToFinish', 'To finish'], ['statAtSea', 'At sea'], ['statSailed', 'Sailed'], ['statTime', 'Race time'],
+        ['rank', '{nth} of {of}', 'Next to the name, and {nth} on the map: the rank in the class from the organisers’ tracker'],
+        ['rankTitle', '{nth} of {of} in {class} (the race tracker, updated about hourly)', 'Hover text of the rank'],
         ['statStartsIn', 'Starts in'], ['statDistance', 'Distance'], ['statStart', 'Start'], ['statAverage', 'Average'],
         ['startsIn', 'Starts in {time}'], ['startsAt', '{day}, {clock} from {place}'], ['startsNow', 'Starting any minute'],
         ['finishedIn', 'Finished in {time}'], ['retired', 'Out of the race'],
@@ -67,6 +69,8 @@ export const COPY_GROUPS: CopyGroup[] = [
         ['boatSailed', 'Sailed so far'], ['boatPosition', 'Position'],
         ['sail1', 'Upwind'], ['sail2', 'Close reach'], ['sail3', 'Beam reach'], ['sail4', 'Broad reach'], ['sail5', 'Downwind'],
         ['sailAngle', 'Wind {angle}° off his bow'],
+        ['fleetLink', 'See the whole fleet on the {name} tracker', 'Quiet link at the end of Find Milan’s page: opens the organisers’ tracker in a new window ({name}: race.json official.name)'],
+        ['fleetLinkNoName', 'See the whole fleet on the race tracker'],
         ['waitTitle', 'Waiting for the start'], ['waitText', 'The track shows up here and on the map once {short} is racing.'],
     ] },
     { id: 'video', title: 'Video (Find Milan’s page, only when there is one)', items: [
@@ -120,6 +124,11 @@ export const w = (key: string): string => COPY[key] ?? key;
 /** fills {name} placeholders; {racetrack} becomes the plain word */
 export function fill(s: string, vars: Record<string, string | number> = {}): string {
     return s.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : k === 'racetrack' ? 'Race Tracker' : m));
+}
+/** 1st, 2nd, 3rd, 4th … 11th, 12th, 13th, 21st */
+export function nth(n: number): string {
+    const v = n % 100;
+    return `${n}${v >= 11 && v <= 13 ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
 }
 export const t = (key: string, vars: Record<string, string | number> = {}): string => fill(w(key), vars);
 

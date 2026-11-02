@@ -12,9 +12,10 @@ lists every test scenario and the checks to do by hand in real Windy.
 
 ## What it does
 
-- **Map:** the track so far (black line; start green, finish blue), the boat (the athlete's round photo in a live blue ring with a soft pulse, and a
-  Google Maps–style beam for the course; ring and beam turn grey when the tracker is quiet or the race is over;
-  then the flag, the name and the speed), start and finish, and a dotted great-circle line to the finish.
+- **Map:** the track so far (black line; start green, finish blue), the boat (a black Class40 seen from above with a white
+  edge, turned to its course, in a live blue ring with a soft pulse; the ring turns grey when the tracker is quiet or the race
+  is over; phones draw it a little smaller, 16 x 32 px instead of 20 x 40; owner's pick, 2 Nov), then a black tag: the
+  athlete's photo, the name, the speed, the rank, the flag, start and finish, and a dotted great-circle line to the finish.
   Tapping the boat opens Windy's own point forecast there. There is no card on the map (owner's decision).
 - **Boat photos** (race.json, all optional): `athlete.background` (`data/boat-bg.jpg`, upright) behind the whole panel,
   fading to grey; the cards are dark glass (Windy's darkest greys, see-through and blurred, no colour added; a darker tint was too dark); text right on the photo is white and the grey labels near-white (owner's picks, 29 Oct). Two more ideas are built but switched
@@ -41,7 +42,13 @@ lists every test scenario and the checks to do by hand in real Windy.
 - **Data:** two JSON files in this repository, read by everyone. See [docs/data.md](docs/data.md).
 - **Ranking** (owner, 2 Nov): `scripts/fetch-ranking.mjs`, a step of update-track, reads Milan's rank in his class from
   the official tracker's current report into `data/ranking.json` (only opens the map when versions.txt says there's a
-  new report). Display: not built yet (options sent to the owner first).
+  new report). Shown only while racing: a soft orange pill "8th of 49" next to the name (drops to its own line on
+  narrow phones), and "8th" in the boat's tag on the map (owner's picks, 2 Nov). The plugin reads the file next to race.json
+  like videos.json (optional; anything odd, or a status other than RAC, shows nothing).
+- **Race tracker link** (owner, 2 Nov): a quiet underlined line at the very end of Find Milan's page, "See the whole fleet
+  on the Route du Rhum tracker" (race.json `official.name`; never the word "official"), no arrow, opens a new window.
+- **Earlier videos** scroll sideways in one row of thumbnails inside the video card (owner, 2 Nov: the card never grows);
+  a mouse wheel over the row scrolls it too. Phones keep the single link to YouTube.
 - **Forecast never closes the plugin** (bug, 2 Nov): Windy's rqstOpen of a bottom-pane plugin (the forecast) closes
   everything in the right-hand pane; racetrack opens the forecast with `plugins.detail.open({ params })` instead (desktop).
 - **Whole race** opens the track page only; it doesn't move the map (owner, 2 Nov).

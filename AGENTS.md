@@ -15,8 +15,8 @@ lists every test scenario and the checks to do by hand in real Windy.
 - **Map:** the track so far (black line; start green, finish blue), the boat (a black Class40 seen from above with a white
   edge, turned to its course, in a live blue ring with a soft pulse; the ring turns grey when the tracker is quiet or the race
   is over; owner's pick, 2 Nov). It shrinks as the map zooms out: 20, 16, 13 px wide (zoom 7+, 5–6, below 5; a class
-  rt-zmid / rt-zfar on the map container), and phones draw it one step smaller (16, 13, 11), then a black tag (desktop:
-  on the boat's left, because Windy's forecast marker fans its green model labels out to the right; phones: right): the
+  rt-zmid / rt-zfar on the map container), and phones draw it one step smaller (16, 13, 11), then a black tag (on the boat's right;
+  on its left when Windy's wind arrows at the boat point right, so it never covers them; `tagSide()` checks every second): the
   athlete's photo, the name, the speed, the rank, the flag, start and finish, and a dotted great-circle line to the finish.
   Tapping the boat or its tag: desktop shows Find Milan's page, pans the boat to the middle (same zoom) and opens
   Windy's point forecast there on its Wind tab; phones open the forecast. There is no card on the map (owner's decision).
@@ -50,9 +50,14 @@ lists every test scenario and the checks to do by hand in real Windy.
   like videos.json (optional; anything odd, or a status other than RAC, shows nothing).
 - **Race tracker link** (owner, 2 Nov): a quiet underlined line at the very end of Find Milan's page, "See the whole fleet
   on the Route du Rhum tracker" (race.json `official.name`; never the word "official"), no arrow, opens a new window.
-- **Videos** (owner, 2 Nov): an upright video (a Short) is 150 px wide on the left with its title beside it; a wide one
+- **Videos** (owner, 2 Nov): an upright video (a Short) is 150 px wide on the left with its title beside it, at the top; a wide one
   is full width with the title under it. Earlier videos: a short list with small thumbnails (64 x 36) that scrolls inside
   the card (about two and a half rows), so the card never grows. Phones keep the single link to YouTube.
+- **Windy's wind marker** (its point forecast on the Wind tab draws, where it is, a 200 px white circle with the unit
+  and one arrow per model; `.ww-marker`, `.ww-marker__circle`, `.ww-marker__arrow`, checked on windy.com 2 Nov): the
+  circle is hidden while Race Tracker is open (a style added on open, removed on close), the arrows stay (owner, 2 Nov).
+- **YouTube's player** is loaded larger and shrunk to fit (1.4x wide, 2x upright), so its own buttons and title come out
+  smaller; YouTube's player can't be styled from outside (owner, 2 Nov).
 - **Speed** matches the organisers' tracker (checked 2 Nov 15:00 UTC: theirs 15.7 kn, heading 295°; ours 15.5 kn, 296°).
 - **Forecast never closes the plugin** (bug, 2 Nov): Windy's rqstOpen of a bottom-pane plugin (the forecast) closes
   everything in the right-hand pane; racetrack opens the forecast with `plugins.detail.open({ params })` instead (desktop).

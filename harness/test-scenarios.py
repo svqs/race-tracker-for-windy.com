@@ -320,8 +320,20 @@ with sync_playwright() as p:
     check('S21 rank: a pill next to the name, "8th of 49" (ranking.json)', text(pg, '.card.head .who .rank') == '8th of 49', text(pg, '.card.head .who .rank'))
     rk = pg.evaluate("(() => { const a = document.querySelector('.card.head .who a.rank'); return a && [a.href, a.target, a.rel]; })()")
     check('S21 rank: tapping it opens the race tracker in a new window', bool(rk) and rk[0] == 'https://carto.routedurhum.com/en/index.html' and rk[1] == '_blank' and 'noopener' in rk[2], rk)
-    side = pg.evaluate("(() => { const t = document.querySelector('.rt-tagline').getBoundingClientRect(), h = document.querySelector('.rt-hull').getBoundingClientRect(); return t.right < h.left; })()")
-    check('S21 boat: on desktop the tag sits on the boat\'s left (Windy\'s forecast labels fan out to the right)', side)
+    # Windy's Wind-tab marker at the boat (white circle + one arrow per model): the circle is hidden, the tag goes where the arrows don't
+    ARROWS = """(dir) => { document.querySelector('#fake-ww')?.remove(); const b = document.querySelector('.rt-boat').getBoundingClientRect();
+        const m = document.createElement('div'); m.id = 'fake-ww'; m.className = 'ww-marker'; m.style.cssText = `position:fixed;left:${b.left}px;top:${b.top}px;width:0;height:0`;
+        m.innerHTML = '<div class="ww-marker__circle" style="position:absolute;width:200px;height:200px;left:-100px;top:-100px;border:1px solid #fff;border-radius:50%"></div>'
+            + '<div class="ww-marker__arrow" style="position:absolute;left:0;top:0"><div style="position:absolute;top:-4px;height:8px;width:70px;' + (dir > 0 ? 'left:100px' : 'left:-170px') + ';background:orange"></div></div>';
+        document.body.appendChild(m); }"""
+    SIDE = "(() => { const t = document.querySelector('.rt-tagline').getBoundingClientRect(), h = document.querySelector('.rt-hull').getBoundingClientRect(); return t.right < h.left ? 'left' : t.left > h.right ? 'right' : 'over'; })()"
+    check('S21 boat: with no Windy wind marker at the boat, the tag is on its right', pg.evaluate(SIDE) == 'right', pg.evaluate(SIDE))
+    pg.evaluate(ARROWS, 1); pg.wait_for_timeout(1300)
+    check('S21 boat: Windy\'s wind arrows point right → the tag moves to the left', pg.evaluate(SIDE) == 'left', pg.evaluate(SIDE))
+    check('S21 boat: Windy\'s big white circle is hidden while Race Tracker is open', pg.evaluate("getComputedStyle(document.querySelector('.ww-marker__circle')).display") == 'none')
+    pg.evaluate(ARROWS, -1); pg.wait_for_timeout(1300)
+    check('S21 boat: arrows point left → the tag goes back to the right', pg.evaluate(SIDE) == 'right', pg.evaluate(SIDE))
+    pg.evaluate("document.querySelector('#fake-ww')?.remove()")
     check('S21 rank: in the tag on the map too, "8th"', text(pg, '.rt-tagline .rt-rank') == '8th', text(pg, '.rt-tagline .rt-rank'))
     lst = pg.evaluate("(() => { const l = document.querySelector('.vlist'); const im = l.querySelector('.vitem img').getBoundingClientRect(); return [l.querySelectorAll('.vitem').length, l.scrollHeight > l.clientHeight, Math.round(l.getBoundingClientRect().height), Math.round(im.width), Math.round(im.height)]; })()")
     check('S21 videos: all five earlier ones in a short list that scrolls inside the card, small thumbnails (64 x 36)', lst[0] == 5 and lst[1] and lst[2] <= 140 and lst[3] == 64 and lst[4] == 36, lst)

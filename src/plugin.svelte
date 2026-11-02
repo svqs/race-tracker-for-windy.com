@@ -660,6 +660,36 @@
         if (!isMobile) {setTimeout(() => {if (!destroyed) {windTab();}}, 400);}
     }
 
+    /**
+     * Windy's forecast on its Wind tab draws a marker where it is: a 200 px white circle with the unit under it, and one
+     * arrow per model pointing the way the wind blows (checked on windy.com, 2 Nov: .ww-marker, .ww-marker__circle,
+     * .ww-marker__arrow). Owner, 2 Nov: hide the circle while Race Tracker is open, keep the arrows; and Milan's tag
+     * goes on the side the arrows don't, so it never covers them.
+     */
+    const HIDE_RING_CSS = '.ww-marker__circle{display:none!important}';
+    function tagSide() {
+        try {
+            const boat = document.querySelector('.rt-boat');
+            if (!boat) {return;}
+            const b = boat.getBoundingClientRect();
+            let dx = 0;
+            let n = 0;
+            document.querySelectorAll('.ww-marker').forEach(m => {
+                const r = m.getBoundingClientRect();
+                if (Math.hypot(r.left - b.left, r.top - b.top) > 30) {return;} // Windy's forecast is somewhere else
+                m.querySelectorAll('.ww-marker__arrow > div').forEach(d => {
+                    const q = d.getBoundingClientRect();
+                    if (!q.width) {return;}
+                    dx += (q.left + q.right) / 2 - r.left;
+                    n++;
+                });
+            });
+            map.getContainer().classList.toggle('rt-tagleft', n > 0 && dx / n > 8);
+        } catch {
+            /* the tag stays where it is */
+        }
+    }
+
     /** the boat a little smaller as the map zooms out (owner, 2 Nov): a class on the map, read by the marker's CSS */
     function onZoom() {
         try {
@@ -856,6 +886,7 @@
     /* ---------- lifecycle ---------- */
     let timer: ReturnType<typeof setInterval> | undefined;
     let tickTimer: ReturnType<typeof setInterval> | undefined;
+    let sideTimer: ReturnType<typeof setInterval> | undefined;
     function onVisible() {
         if (document.visibilityState === 'visible') {
             now = Date.now();
@@ -917,11 +948,13 @@
             document.head.appendChild(el);
         };
         add('racetrack-theme', themeCss());
+        add('racetrack-hide-ring', HIDE_RING_CSS);
         // the logo's font (everything else uses Windy's own fonts, as Windy's CSS guide says)
         add('racetrack-logo-font', LOGO_FONT_CSS);
         document.addEventListener('visibilitychange', onVisible);
         timer = setInterval(() => { if (document.visibilityState !== 'hidden') {void refresh();} }, REFRESH);
         tickTimer = setInterval(() => (now = Date.now()), 30e3);
+        sideTimer = setInterval(tagSide, 1000);
         for (const [topic, f] of pfEvents) {
             try {
                 bcast.on(topic as never, f as never);
@@ -945,11 +978,13 @@
         abort?.abort();
         clearInterval(timer);
         clearInterval(tickTimer);
+        clearInterval(sideTimer);
+        document.getElementById('racetrack-hide-ring')?.remove();
         document.removeEventListener('visibilitychange', onVisible);
         document.removeEventListener('error', onPhotoError, true);
         try {
             map.off('zoomend', onZoom);
-            map.getContainer().classList.remove('rt-zmid', 'rt-zfar');
+            map.getContainer().classList.remove('rt-zmid', 'rt-zfar', 'rt-tagleft');
         } catch {
             /* already gone */
         }

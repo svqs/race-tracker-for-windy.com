@@ -1,12 +1,12 @@
 {
-    "rank": 10,
+    "rank": 15,
     "of": 49,
     "class": "Class40",
     "status": "RAC",
-    "report": "2026-11-03T18:00:00.000Z",
-    "dtf": 2846.7,
-    "dtl": 34.8,
+    "report": "2026-11-03T19:00:00.000Z",
+    "dtf": 2842.1,
+    "dtl": 46.7,
     "leader": "Maccaferri Futura",
-    "version": "20261103180439",
+    "version": "20261103190439",
     "source": "https://carto.routedurhum.com/en/index.html"
 }

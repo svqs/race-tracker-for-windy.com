@@ -3,10 +3,10 @@
     "of": 49,
     "class": "Class40",
     "status": "RAC",
-    "report": "2026-11-04T00:00:00.000Z",
-    "dtf": 2781.8,
-    "dtl": 47.9,
+    "report": "2026-11-04T01:00:00.000Z",
+    "dtf": 2769.8,
+    "dtl": 50.9,
     "leader": "Solano",
-    "version": "20261104000439",
+    "version": "20261104010439",
     "source": "https://carto.routedurhum.com/en/index.html"
 }

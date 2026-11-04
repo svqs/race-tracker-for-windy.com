@@ -1,12 +1,12 @@
 {
-    "rank": 18,
+    "rank": 17,
     "of": 49,
     "class": "Class40",
     "status": "RAC",
-    "report": "2026-11-04T07:00:00.000Z",
-    "dtf": 2696.7,
-    "dtl": 67.1,
+    "report": "2026-11-04T08:00:00.000Z",
+    "dtf": 2684.3,
+    "dtl": 67,
     "leader": "Solano",
-    "version": "20261104070440",
+    "version": "20261104080439",
     "source": "https://carto.routedurhum.com/en/index.html"
 }

@@ -1,12 +1,12 @@
 {
-    "rank": 17,
+    "rank": 18,
     "of": 49,
     "class": "Class40",
     "status": "RAC",
-    "report": "2026-11-06T22:00:00.000Z",
-    "dtf": 2144.3,
-    "dtl": 186.9,
+    "report": "2026-11-06T23:00:00.000Z",
+    "dtf": 2135.5,
+    "dtl": 187.1,
     "leader": "Amarris",
-    "version": "20261106220441",
+    "version": "20261106230613",
     "source": "https://carto.routedurhum.com/en/index.html"
 }

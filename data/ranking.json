@@ -3,10 +3,10 @@
     "of": 49,
     "class": "Class40",
     "status": "RAC",
-    "report": "2026-11-07T05:00:00.000Z",
-    "dtf": 2061.9,
-    "dtl": 178.6,
+    "report": "2026-11-07T06:00:00.000Z",
+    "dtf": 2050,
+    "dtl": 182.7,
     "leader": "Sogestran - Seafrigo",
-    "version": "20261107050441",
+    "version": "20261107060441",
     "source": "https://carto.routedurhum.com/en/index.html"
 }

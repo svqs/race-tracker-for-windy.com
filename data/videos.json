@@ -1,7 +1,13 @@
 {
-    "updated": "2026-11-06T08:00:15.357Z",
+    "updated": "2026-11-09T08:30:16.645Z",
     "source": "https://www.youtube.com/feeds/videos.xml?playlist_id=PLKGh7_gk-WF8",
     "videos": [
+        {
+            "url": "https://www.youtube.com/shorts/p0DUGr4UGJ8",
+            "title": "Day 7: Dropping a Kite and a Windy Exit of The Storm",
+            "date": "2026-11-09T08:24:46.000Z",
+            "vertical": true
+        },
         {
             "url": "https://www.youtube.com/shorts/9_kj64oxJ5s",
             "title": "Day 5:  Heading into the Eye of the Storm",

@@ -3,10 +3,10 @@
     "of": 49,
     "class": "Class40",
     "status": "RAC",
-    "report": "2026-11-10T12:00:00.000Z",
-    "dtf": 1312,
-    "dtl": 350,
+    "report": "2026-11-10T12:55:00.000Z",
+    "dtf": 1308.2,
+    "dtl": 350.8,
     "leader": "Amarris",
-    "version": "20261110120443",
+    "version": "20261110130444",
     "source": "https://carto.routedurhum.com/en/index.html"
 }

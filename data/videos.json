@@ -1,7 +1,13 @@
 {
-    "updated": "2026-11-09T08:30:16.645Z",
+    "updated": "2026-11-12T10:00:46.445Z",
     "source": "https://www.youtube.com/feeds/videos.xml?playlist_id=PLKGh7_gk-WF8",
     "videos": [
+        {
+            "url": "https://www.youtube.com/shorts/M_ruHKynkB4",
+            "title": "5 Days To the Finish of Route du Rhum, Exiting a High Pressure System",
+            "date": "2026-11-12T09:54:53.000Z",
+            "vertical": true
+        },
         {
             "url": "https://www.youtube.com/shorts/p0DUGr4UGJ8",
             "title": "Day 7: Dropping a Kite and a Windy Exit of The Storm",

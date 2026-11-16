@@ -337,6 +337,86 @@ await scenario('F26 the real reader in a headless Chrome: finds the boat by its 
     }
 });
 
+// ---- the race tracker backup (owner, 16 Nov): the organisers' map fills holes in the feed of over 90 minutes ----
+// the organisers' map every 15 minutes from the start until 20 minutes ago (like carto.routedurhum.com)
+const offEvery15 = () => {
+    const pts = [];
+    for (let t = START; t <= NOW - 20 * 60e3; t += 15 * 60e3) pts.push({ t, lat: +(48.5 - (t - START) / H * 0.1).toFixed(4), lon: +(-2.4 - (t - START) / H * 0.2).toFixed(4) });
+    return { id: '59', name: 'Inland Roots, Ocean Soul', state: 'RUNNING', standby: false, start: START, points: pts };
+};
+const hourly = hours => hours.map(h => ybPos(h));
+const srcOf = dir => trackOf(dir).points.map(p => [Math.round((Date.parse(p.t) - START) / 60e3), p.src || 'feed']);
+
+await scenario('F35 backup: a hole of over 90 minutes in the feed is filled from the race tracker, 30 minutes clear of the feed\'s positions, marked "official"', async () => {
+    const dir = withOfficial(folder());
+    // the feed: every hour, but nothing between hour 3 and hour 8 (and it's up to date: hour 29 of 30)
+    answer = yb(hourly([1, 2, 3, 8, 9, 10, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]));
+    const r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: officialFile(offEvery15()) });
+    assert.equal(r.code, 0, r.out);
+    const got = srcOf(dir);
+    const backup = got.filter(([, s]) => s === 'official').map(([m]) => m);
+    // hours 3–8 (180–480 min) without their first and last 30 minutes: 210 … 450, every 15 minutes; and 10–20 (600–1200): 630 … 1170
+    const want = [];
+    for (let m = 210; m <= 450; m += 15) want.push(m);
+    for (let m = 630; m <= 1170; m += 15) want.push(m);
+    // from the start (0) to hour 1 is under 90 minutes, so nothing there; a position exactly 30 minutes from the feed's
+    // (450, 1170) may fall either side: the feed's times are whole seconds
+    const edge = new Set([450, 1170]);
+    assert.deepEqual(backup.filter(m => !edge.has(m)), want.filter(m => !edge.has(m)));
+    assert.ok(got.filter(([, s]) => s === 'feed').length === 16, 'every position from the feed is kept');
+    assert.ok(/Race tracker backup: \d+ position/.test(r.out), r.out);
+    assert.ok(await checkData(dir));
+});
+await scenario('F36 backup: the feed quiet for over 90 minutes → the race tracker\'s newer positions come in; when the feed is back it carries on after them', async () => {
+    const dir = withOfficial(folder());
+    answer = yb(hourly([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]));
+    const r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: officialFile(offEvery15()) });
+    assert.equal(r.code, 0, r.out);
+    // the feed's last is hour 27 (1620 min), now is 1800 min: from 1650 up to the map's newest (20 min ago: 1780 → 1770)
+    const tail = srcOf(dir).filter(([m, s]) => s === 'official' && m > 1620).map(([m]) => m);
+    assert.deepEqual(tail, [1650, 1665, 1680, 1695, 1710, 1725, 1740, 1755, 1770]);
+    // the feed comes back (with an older position it never sent, and a new one): only the new one is added after the backup
+    answer = yb(hourly([28, 29.9]));
+    const r2 = await run(dir, { ...YB_ENV, OFFICIAL_FILE: officialFile(offEvery15()) });
+    assert.equal(r2.code, 0, r2.out);
+    const after = srcOf(dir);
+    assert.deepEqual(after.slice(-2), [[1770, 'official'], [1794, 'feed']]);
+    assert.ok(await checkData(dir));
+});
+await scenario('F37 backup: the feed is down (HTTP 500) → the race tracker fills in, the run still succeeds with a warning; with neither, it fails', async () => {
+    const dir = withOfficial(folder(hourly([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]).map(p => ({ t: iso(p.at * 1000), lat: p.lat, lon: p.lng }))));
+    answer = { status: 500, type: 'text/plain', body: 'oops' };
+    const r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: officialFile(offEvery15()) });
+    assert.equal(r.code, 0, r.out);
+    assert.ok(/WARNING: the feed failed.*the backup filled in/.test(r.out), r.out);
+    assert.ok(srcOf(dir).some(([m, s]) => s === 'official' && m > 1590));
+    const dir2 = withOfficial(folder([{ t: iso(START + H), lat: 48.5, lon: -2.4 }])); const before = raw(dir2);
+    const r2 = await run(dir2, { ...YB_ENV, OFFICIAL_FILE: path.join(dir2, 'missing.json') });
+    assert.notEqual(r2.code, 0, 'feed down and the map unreadable: the run fails');
+    assert.equal(raw(dir2), before);
+});
+await scenario('F38 backup: not needed when the feed has no hole; the map unreadable never stops the feed; OFFICIAL_BACKUP=off; no "official" in race.json', async () => {
+    const all = Array.from({ length: 29 }, (_, i) => i + 1);
+    let dir = withOfficial(folder());
+    answer = yb(hourly(all));
+    let r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: officialFile(offEvery15()) });
+    assert.equal(r.code, 0, r.out);
+    assert.ok(srcOf(dir).every(([, s]) => s === 'feed'), 'nothing from the backup');
+    assert.ok(/backup: not needed/.test(r.out), r.out);
+    dir = withOfficial(folder());
+    answer = yb(hourly([1, 2, 10, 11]));
+    r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: path.join(dir, 'missing.json') });
+    assert.equal(r.code, 0, r.out);
+    assert.equal(trackOf(dir).points.length, 4, 'the feed\'s positions still go out');
+    assert.ok(/couldn't be read/.test(r.out), r.out);
+    dir = withOfficial(folder());
+    r = await run(dir, { ...YB_ENV, OFFICIAL_BACKUP: 'off', OFFICIAL_FILE: officialFile(offEvery15()) });
+    assert.ok(srcOf(dir).every(([, s]) => s === 'feed'));
+    dir = folder();
+    r = await run(dir, { ...YB_ENV, OFFICIAL_FILE: officialFile(offEvery15()) });
+    assert.ok(srcOf(dir).every(([, s]) => s === 'feed') && !/backup/.test(r.out));
+});
+
 // ---- YouTube: new videos from a playlist or channel → data/videos.json (scripts/fetch-videos.mjs) ----
 // a stand-in YouTube: the feed (as YouTube writes it), a channel page for @handles, and /shorts/<id> (200 for a Short)
 let ytFeed = '', ytStatus = 200; const shorts = new Set(); const ytAsked = [];

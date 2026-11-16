@@ -11,6 +11,12 @@
 //
 // race.json "official" (the organisers' tracker): positions newer than the official map shows wait (scripts/official.mjs).
 //
+// BACKUP (owner, 16 Nov 2026, after YB sent nothing from 7 Nov 05:00 to 8 Nov 04:00 UTC): when the feed has a hole of
+// more than 90 minutes, or has been quiet for that long, the organisers' map fills it with its own positions (every 15
+// minutes), marked "src": "official". The feed still comes first: the backup never adds a position within 30 minutes of
+// one we have. OFFICIAL_BACKUP=off (repository variable) switches it off; OFFICIAL_FILE (tests) reads the map's answer
+// from a file.
+//
 // New positions are added to the ones already in the file; nothing is ever removed. When nothing new came in,
 // the file isn't touched (and the Action makes no commit).
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
@@ -135,12 +141,61 @@ if (!readers[type]) throw new Error(`TRACK_FEED_TYPE "${type}" is not one of: ${
 // new ones only: after the last we have, not from the future (a tracker clock glitch would block everything after it),
 // with a real place, and each time once (feeds repeat positions)
 const seen = new Set();
-let fresh = (await readers[type]()).filter(p => {
-    const t = Date.parse(p.t);
-    if (!isFinite(t) || t <= since || t > Date.now() + 3600e3 || !place(p.lat, p.lon) || seen.has(t)) return false;
-    seen.add(t);
-    return true;
-});
+let fresh = [];
+let feedError = null;
+try {
+    fresh = (await readers[type]()).filter(p => {
+        const t = Date.parse(p.t);
+        if (!isFinite(t) || t <= since || t > Date.now() + 3600e3 || !place(p.lat, p.lon) || seen.has(t)) return false;
+        seen.add(t);
+        return true;
+    });
+} catch (e) {
+    // the backup below may still have positions; the run fails only if it has none either
+    feedError = e;
+    console.log(`The feed failed: ${e.message}`);
+}
+
+// the backup from the organisers' map (see the top of this file)
+const GAP = 90 * 60e3;
+const MARGIN = 30 * 60e3;
+const summary = [];
+const backupOn = Boolean(race.official?.url) && (process.env.OFFICIAL_BACKUP || '').toLowerCase() !== 'off';
+let backedUp = 0;
+if (backupOn) {
+    try {
+        const official = await readOfficial(race.official, race.athlete?.name);
+        const start = Date.parse(race.start.time);
+        const now = Date.now();
+        const have = [...points, ...fresh].map(p => Date.parse(p.t)).filter(t => isFinite(t) && t >= start - MARGIN && t <= now).sort((a, b) => a - b);
+        // the holes: from the start, between two positions more than 90 minutes apart, and after the last one when it's
+        // more than 90 minutes old; each without its first and last 30 minutes
+        const holes = [];
+        const edges = [start - MARGIN, ...have];
+        for (let i = 1; i < edges.length; i++) if (edges[i] - edges[i - 1] > GAP) holes.push([edges[i - 1] + MARGIN, edges[i] - MARGIN]);
+        const last = edges[edges.length - 1];
+        if (now - last > GAP) holes.push([last + MARGIN, now]);
+        const inHole = t => holes.some(([a, b]) => t >= a && t <= b);
+        const fill = official.points
+            .filter(p => p.t >= start && p.t <= now && place(p.lat, p.lon) && inHole(p.t))
+            .map(p => ({ t: new Date(p.t).toISOString(), lat: +p.lat.toFixed(5), lon: +p.lon.toFixed(5), sog: null, cog: null, src: 'official' }));
+        fresh.push(...fill);
+        backedUp = fill.length;
+        const when = t => new Date(t).toISOString().replace(/:\d\d\.\d+Z$/, ' UTC').replace('T', ' ');
+        const newest = official.points.length ? when(Math.max(...official.points.map(p => p.t))) : 'none';
+        summary.push(backedUp
+            ? `Race tracker backup: ${backedUp} position(s) from the organisers' map, ${when(Date.parse(fill[0].t))} to ${when(Date.parse(fill[fill.length - 1].t))}.`
+            : `Race tracker backup: not needed (no hole over 90 minutes it can fill; its newest position ${newest}).`);
+    } catch (e) {
+        summary.push(`Race tracker backup: the organisers' map couldn't be read (${e.message}).`);
+    }
+}
+if (feedError) summary.push(`WARNING: the feed failed (${feedError.message})${backedUp ? '; the backup filled in.' : '.'}`);
+if (summary.length) {
+    console.log(summary.join('\n'));
+    if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Positions\n\n${summary.map(l => `- ${l}`).join('\n')}\n`);
+}
+if (feedError && !backedUp) throw feedError;
 
 // SWITCHED OFF on 1 Nov 2026 (decided with the team): the official map showed no positions for boat 59 before the start,
 // so this check held back every position and track.json stayed empty. Positions from YB are published without it, so

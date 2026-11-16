@@ -37,6 +37,8 @@ jobs:
                   TRACK_FEED_EVENT: ${{ vars.TRACK_FEED_EVENT }}
                   TRACK_FEED_SPEED: ${{ vars.TRACK_FEED_SPEED }}
                   OFFICIAL_CHECK: ${{ vars.OFFICIAL_CHECK }}
+                  # the race tracker backup fills holes in the feed (scripts/fetch-track.mjs); "off" switches it off
+                  OFFICIAL_BACKUP: ${{ vars.OFFICIAL_BACKUP }}
               run: node scripts/fetch-track.mjs data/track.json
             # new videos on the YouTube playlist or channel in race.json ("youtube") → data/videos.json; runs (and gets
             # committed) even when the positions step failed, e.g. while the official map can't be read

@@ -98,6 +98,10 @@ something changed and the check passed. Each scenario runs the real script in a 
 | F32 | Ranking without an official tracker | Nothing |
 | F33 | Ranking: a new official report (its real answer, 2 Nov) | ranking.json 8 of 49 in Class40; the same report again: the map isn't opened, file untouched |
 | F34 | Ranking that makes no sense | The step fails, ranking.json untouched |
+| F35 | Backup: a hole of over 90 minutes in the feed | Filled from the race tracker every 15 minutes, 30 minutes clear of the feed's positions, marked `"src": "official"`; every feed position kept |
+| F36 | Backup: the feed quiet for over 90 minutes | The race tracker's newer positions come in; when the feed is back, only its newer positions are added after them |
+| F37 | Backup: the feed is down (HTTP 500) | The race tracker fills in and the run succeeds with a warning; feed down and map unreadable: the run fails, track.json untouched |
+| F38 | Backup not needed / unreadable / switched off | No hole: nothing added; map unreadable: the feed's positions still go out; `OFFICIAL_BACKUP=off` and no `official` in race.json: no backup |
 | F21 | YB's real answer (my.yb.tl/oceancall, 30 Oct: `t` latitude, `g` longitude, no speed) | Read exactly |
 
 F22–F25 are **skipped** (shown with `-`, not failed) while the official-map check in `scripts/fetch-track.mjs` is

@@ -101,6 +101,8 @@ hours apart. So a position shows up anywhere from about 15 minutes to several ho
   Without them, racetrack works them out from the positions before.
 - The order doesn't matter. Duplicates, positions in the future and jumps faster than 50 knots are dropped.
 - One position per line keeps the file small and every update easy to read in the history.
+- `"src": "official"` marks a position from the organisers' race tracker, added by the backup when the feed has a hole
+  of over 90 minutes (see `scripts/fetch-track.mjs`). The plugin treats it like any other position.
 
 ## Updating the track automatically
 

@@ -63,6 +63,11 @@ lists every test scenario and the checks to do by hand in real Windy.
 - **Forecast never closes the plugin** (bug, 2 Nov): Windy's rqstOpen of a bottom-pane plugin (the forecast) closes
   everything in the right-hand pane; racetrack opens the forecast with `plugins.detail.open({ params })` instead (desktop).
 - **Whole race** opens the track page only; it doesn't move the map (owner, 2 Nov).
+- **Race tracker backup** (owner, 16 Nov; YB sent nothing 7 Nov 05:00–8 Nov 04:00 and from 12 Nov 21:00 UTC):
+  `scripts/fetch-track.mjs` fills every hole in the feed of over 90 minutes, and a feed quiet for over 90 minutes, with
+  the organisers' map's positions (every 15 minutes), each marked `"src": "official"`, never within 30 minutes of a feed
+  position; the feed stays first. A feed that fails is fine when the backup fills in; the map unreadable never stops the
+  feed. Repository variable `OFFICIAL_BACKUP=off` switches it off. No plugin release needed (data only).
 - **Official tracker check** (race.json `official`, carto.routedurhum.com, `scripts/official.mjs`): holds back positions
   the organisers' map doesn't show yet. SWITCHED OFF on 1 Nov (commented out in `scripts/fetch-track.mjs`); the owner
   turns it back on from 2 Nov afternoon. The track starts at the start either way.

@@ -164,7 +164,8 @@ const backupOn = Boolean(race.official?.url) && (process.env.OFFICIAL_BACKUP || 
 let backedUp = 0;
 if (backupOn) {
     try {
-        const official = await readOfficial(race.official, race.athlete?.name);
+        // needTrack: wait until the map has loaded our boat's track (it lists the boats before their tracks)
+        const official = await readOfficial(race.official, race.athlete?.name, { needTrack: true });
         const start = Date.parse(race.start.time);
         const now = Date.now();
         const have = [...points, ...fresh].map(p => Date.parse(p.t)).filter(t => isFinite(t) && t >= start - MARGIN && t <= now).sort((a, b) => a - b);
@@ -193,6 +194,8 @@ if (backupOn) {
 if (feedError) summary.push(`WARNING: the feed failed (${feedError.message})${backedUp ? '; the backup filled in.' : '.'}`);
 if (summary.length) {
     console.log(summary.join('\n'));
+    // on GitHub also as notices, so the run's page (and its API) shows what the backup did
+    if (process.env.GITHUB_ACTIONS) for (const l of summary) console.log(`::${l.startsWith('WARNING') || /couldn't/.test(l) ? 'warning' : 'notice'} title=Positions::${l.replace(/\r?\n/g, ' ')}`);
     if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, `## Positions\n\n${summary.map(l => `- ${l}`).join('\n')}\n`);
 }
 if (feedError && !backedUp) throw feedError;

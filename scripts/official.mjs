@@ -21,7 +21,7 @@ const km = (a, b) => {
 const fold = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 /** runs inside the official map: our boat's track, read from Geovoile's own objects (window.tracker) */
-function inPage({ boat, sailor }) {
+function inPage({ boat, sailor, needTrack }) {
     const t = window.tracker;
     if (!t || !Array.isArray(t._boats) || !t._boats.length) return null;
     const fold = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -29,6 +29,8 @@ function inPage({ boat, sailor }) {
         || t._boats.find(x => sailor && (x.sailors || []).some(s => fold(`${s.fname} ${s.lname}`) === sailor || fold(s.lname) === sailor.split(' ').pop()));
     if (!b) return { error: 'boat not found', boats: t._boats.length };
     const locs = (b.track && b.track.locations) || [];
+    // the map lists the boats first and loads their tracks after (seen 16 Nov): wait for the track when it's needed
+    if (needTrack && !locs.length) return null;
     return {
         id: String(b.id), name: b.name, state: t._eventState, standby: !!t.stateIsStandby,
         start: Number(t.timecodeOfficialStart) * 1000 || null,
@@ -41,7 +43,7 @@ function inPage({ boat, sailor }) {
  * Our boat on the official map. OFFICIAL_FILE (tests) reads the same answer from a file instead.
  * Throws when the map can't be read: then nothing new is published (racetrack never gets ahead of the official map).
  */
-export async function readOfficial(cfg, athleteName) {
+export async function readOfficial(cfg, athleteName, { needTrack = false } = {}) {
     if (process.env.OFFICIAL_FILE) return JSON.parse(readFileSync(process.env.OFFICIAL_FILE, 'utf8'));
     const require = createRequire(import.meta.url);
     const { chromium } = require('playwright-core');
@@ -51,7 +53,7 @@ export async function readOfficial(cfg, athleteName) {
     try {
         const page = await browser.newPage({ userAgent: 'Mozilla/5.0 (racetrack-windy-plugin; github action) Chrome' });
         await page.goto(cfg.url, { waitUntil: 'domcontentloaded', timeout: 60e3 });
-        const arg = { boat: cfg.boat || '', sailor: fold(athleteName) };
+        const arg = { boat: cfg.boat || '', sailor: fold(athleteName), needTrack };
         const handle = await page.waitForFunction(inPage, arg, { timeout: 60e3, polling: 1000 });
         const out = await handle.jsonValue();
         if (out.error) throw new Error(`the official map: ${out.error} (${out.boats} boats)`);

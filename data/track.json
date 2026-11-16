@@ -1,5 +1,5 @@
 {
-    "updated": "2026-11-16T20:45:28.682Z",
+    "updated": "2026-11-16T22:00:59.311Z",
     "points": [
         {"t":"2026-10-30T13:00:00.000Z","lat":48.64841,"lon":-2.02253,"sog":null,"cog":null},
         {"t":"2026-10-30T13:30:00.000Z","lat":48.64841,"lon":-2.02252,"sog":null,"cog":null},
@@ -1254,6 +1254,14 @@
         {"t":"2026-11-16T19:30:00.000Z","lat":16.6987,"lon":-61.5339,"sog":null,"cog":null,"src":"official"},
         {"t":"2026-11-16T19:45:00.000Z","lat":16.6565,"lon":-61.565,"sog":null,"cog":null,"src":"official"},
         {"t":"2026-11-16T20:00:00.000Z","lat":16.6086,"lon":-61.6035,"sog":null,"cog":null,"src":"official"},
-        {"t":"2026-11-16T20:30:00.000Z","lat":16.5055,"lon":-61.6996,"sog":null,"cog":null,"src":"official"}
+        {"t":"2026-11-16T20:30:00.000Z","lat":16.5055,"lon":-61.6996,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-16T21:00:00.000Z","lat":16.4004,"lon":-61.7687,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-16T21:15:00.000Z","lat":16.388,"lon":-61.7893,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-16T21:30:00.000Z","lat":16.3675,"lon":-61.8149,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-16T21:35:00.000Z","lat":16.3571,"lon":-61.8204,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-16T21:40:00.000Z","lat":16.3435,"lon":-61.8246,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-16T21:45:00.000Z","lat":16.3282,"lon":-61.83,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-16T21:50:00.000Z","lat":16.3128,"lon":-61.8363,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-16T21:55:00.000Z","lat":16.2998,"lon":-61.8436,"sog":null,"cog":null,"src":"official"}
     ]
 }

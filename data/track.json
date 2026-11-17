@@ -1,5 +1,5 @@
 {
-    "updated": "2026-11-17T04:00:18.120Z",
+    "updated": "2026-11-17T05:30:23.881Z",
     "points": [
         {"t":"2026-10-30T13:00:00.000Z","lat":48.64841,"lon":-2.02253,"sog":null,"cog":null},
         {"t":"2026-10-30T13:30:00.000Z","lat":48.64841,"lon":-2.02252,"sog":null,"cog":null},
@@ -1314,6 +1314,19 @@
         {"t":"2026-11-17T03:40:00.000Z","lat":15.9888,"lon":-61.7387,"sog":null,"cog":null,"src":"official"},
         {"t":"2026-11-17T03:45:00.000Z","lat":15.9848,"lon":-61.7354,"sog":null,"cog":null,"src":"official"},
         {"t":"2026-11-17T03:50:00.000Z","lat":15.9766,"lon":-61.7309,"sog":null,"cog":null,"src":"official"},
-        {"t":"2026-11-17T03:55:00.000Z","lat":15.9669,"lon":-61.7269,"sog":null,"cog":null,"src":"official"}
+        {"t":"2026-11-17T03:55:00.000Z","lat":15.9669,"lon":-61.7269,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T04:25:00.000Z","lat":15.9298,"lon":-61.6858,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T04:30:00.000Z","lat":15.9234,"lon":-61.6766,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T04:35:00.000Z","lat":15.919,"lon":-61.6668,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T04:40:00.000Z","lat":15.9152,"lon":-61.6571,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T04:45:00.000Z","lat":15.9108,"lon":-61.6471,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T04:50:00.000Z","lat":15.9059,"lon":-61.6376,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T04:55:00.000Z","lat":15.9,"lon":-61.6284,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T05:00:00.000Z","lat":15.894,"lon":-61.6191,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T05:05:00.000Z","lat":15.8884,"lon":-61.6087,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T05:10:00.000Z","lat":15.8947,"lon":-61.6028,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T05:15:00.000Z","lat":15.9057,"lon":-61.5999,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T05:20:00.000Z","lat":15.9165,"lon":-61.5969,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-17T05:25:00.000Z","lat":15.9279,"lon":-61.5931,"sog":null,"cog":null,"src":"official"}
     ]
 }

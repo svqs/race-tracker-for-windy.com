@@ -1,5 +1,5 @@
 {
-    "updated": "2026-11-18T20:15:45.652Z",
+    "updated": "2026-11-18T22:15:37.320Z",
     "points": [
         {"t":"2026-10-30T13:00:00.000Z","lat":48.64841,"lon":-2.02253,"sog":null,"cog":null},
         {"t":"2026-10-30T13:30:00.000Z","lat":48.64841,"lon":-2.02252,"sog":null,"cog":null},
@@ -1401,6 +1401,7 @@
         {"t":"2026-11-18T14:00:00.000Z","lat":16.2215,"lon":-61.5296,"sog":null,"cog":null,"src":"official"},
         {"t":"2026-11-18T16:00:01.000Z","lat":16.2216,"lon":-61.5296,"sog":null,"cog":null,"src":"official"},
         {"t":"2026-11-18T18:00:00.000Z","lat":16.2216,"lon":-61.5296,"sog":null,"cog":null,"src":"official"},
-        {"t":"2026-11-18T20:00:00.000Z","lat":16.2215,"lon":-61.5297,"sog":null,"cog":null,"src":"official"}
+        {"t":"2026-11-18T20:00:00.000Z","lat":16.2215,"lon":-61.5297,"sog":null,"cog":null,"src":"official"},
+        {"t":"2026-11-18T22:00:00.000Z","lat":16.2219,"lon":-61.5297,"sog":null,"cog":null,"src":"official"}
     ]
 }
